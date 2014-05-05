@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+  <classpathentry kind="output" path="target/classes"/>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+  <classpathentry kind="src" path="/hadoop-streaming"/>
+  <classpathentry kind="src" path="/hadoop-distcp"/>
+  <classpathentry kind="src" path="/hadoop-archives"/>
+  <classpathentry kind="src" path="/hadoop-rumen"/>
+  <classpathentry kind="src" path="/hadoop-datajoin"/>
+  <classpathentry kind="src" path="/hadoop-extras"/>
+  <classpathentry kind="src" path="/hadoop-gridmix"/>
+  <classpathentry kind="src" path="/hadoop-annotations"/>
+  <classpathentry kind="lib" path="/usr/lib/jdk/jdk1.6.0_35/lib/tools.jar"/>
+</classpath>

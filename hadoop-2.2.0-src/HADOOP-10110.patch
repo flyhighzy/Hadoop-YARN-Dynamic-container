@@ -1,0 +1,16 @@
+Index: hadoop-common-project/hadoop-auth/pom.xml
+===================================================================
+--- hadoop-common-project/hadoop-auth/pom.xml	(revision 1543124)
++++ hadoop-common-project/hadoop-auth/pom.xml	(working copy)
+@@ -54,6 +54,11 @@
+     </dependency>
+     <dependency>
+       <groupId>org.mortbay.jetty</groupId>
++      <artifactId>jetty-util</artifactId>
++      <scope>test</scope>
++    </dependency>
++    <dependency>
++      <groupId>org.mortbay.jetty</groupId>
+       <artifactId>jetty</artifactId>
+       <scope>test</scope>
+     </dependency>

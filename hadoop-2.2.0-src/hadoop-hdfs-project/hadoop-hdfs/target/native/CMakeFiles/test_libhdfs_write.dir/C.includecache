@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/src/main/native/libhdfs/hdfs.h
+errno.h
+-
+fcntl.h
+-
+stdint.h
+-
+time.h
+-
+
+/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/src/main/native/libhdfs/test/test_libhdfs_write.c
+hdfs.h
+/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/src/main/native/libhdfs/test/hdfs.h
+limits.h
+-
+stdio.h
+-
+stdlib.h
+-
+

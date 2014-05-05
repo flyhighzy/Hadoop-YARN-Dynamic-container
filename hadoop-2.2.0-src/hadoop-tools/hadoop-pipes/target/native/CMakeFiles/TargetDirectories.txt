@@ -1,0 +1,6 @@
+/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-tools/hadoop-pipes/target/native/CMakeFiles/hadooppipes.dir
+/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-tools/hadoop-pipes/target/native/CMakeFiles/hadooputils.dir
+/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-tools/hadoop-pipes/target/native/CMakeFiles/pipes-sort.dir
+/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-tools/hadoop-pipes/target/native/CMakeFiles/wordcount-nopipe.dir
+/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-tools/hadoop-pipes/target/native/CMakeFiles/wordcount-part.dir
+/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-tools/hadoop-pipes/target/native/CMakeFiles/wordcount-simple.dir
