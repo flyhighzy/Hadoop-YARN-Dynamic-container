@@ -1,10 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="maven-antrun-" default="main"  >
-<target name="main" if="tar">
-  <echo file="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/dist-maketar.sh">cd &quot;/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target&quot;
-                      tar cf - hadoop-hdfs-2.2.0 | gzip &gt; hadoop-hdfs-2.2.0.tar.gz</echo>
-  <exec dir="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target" executable="sh" failonerror="true">
-    <arg line="./dist-maketar.sh"/>
-  </exec>
+<target name="main">
+  <loadfile srcFile="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/hdfs-jsp-servlet-definitions.xml" property="hdfs.servlet.definitions"/>
+  <loadfile srcFile="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/secondary-jsp-servlet-definitions.xml" property="secondary.servlet.definitions"/>
+  <loadfile srcFile="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/datanode-jsp-servlet-definitions.xml" property="datanode.servlet.definitions"/>
+  <loadfile srcFile="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/journal-jsp-servlet-definitions.xml" property="journal.servlet.definitions"/>
+  <echoproperties destfile="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/webxml.properties">
+    <propertyset>
+      <propertyref regex=".*.servlet.definitions"/>
+    </propertyset>
+  </echoproperties>
+  <filter filtersfile="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/webxml.properties"/>
+  <copy filtering="true" file="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/src/main/webapps/proto-hdfs-web.xml" tofile="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/webapps/hdfs/WEB-INF/web.xml"/>
+  <copy filtering="true" file="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/src/main/webapps/proto-secondary-web.xml" tofile="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/webapps/secondary/WEB-INF/web.xml"/>
+  <copy filtering="true" file="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/src/main/webapps/proto-datanode-web.xml" tofile="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/webapps/datanode/WEB-INF/web.xml"/>
+  <copy filtering="true" file="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/src/main/webapps/proto-journal-web.xml" tofile="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/webapps/journal/WEB-INF/web.xml"/>
+  <copy toDir="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/webapps">
+    <fileset dir="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/src/main/webapps">
+      <exclude name="**/*.jsp"/>
+      <exclude name="**/proto-*-web.xml"/>
+    </fileset>
+  </copy>
 </target>
 </project>

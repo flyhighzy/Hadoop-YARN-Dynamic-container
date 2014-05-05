@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="maven-antrun-" default="main"  >
-<target name="main" if="tar">
-  <echo file="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs-httpfs/target/dist-maketar.sh">cd &quot;/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs-httpfs/target&quot;
-                      tar cf - hadoop-hdfs-httpfs-2.2.0 | gzip &gt; hadoop-hdfs-httpfs-2.2.0.tar.gz</echo>
-  <exec dir="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs-httpfs/target" executable="sh" failonerror="true">
-    <arg line="./dist-maketar.sh"/>
-  </exec>
+<target name="main">
+  <mkdir dir="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs-httpfs/target/test-dir"/>
+  <mkdir dir="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs-httpfs/target/test-dir"/>
 </target>
 </project>

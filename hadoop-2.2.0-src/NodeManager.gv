@@ -1,0 +1,87 @@
+digraph NodeManager {
+graph [ label="NodeManager", fontsize=24, fontname=Helvetica];
+node [fontsize=12, fontname=Helvetica];
+edge [fontsize=9, fontcolor=blue, fontname=Arial];
+subgraph cluster_LocalizedResource {
+label="LocalizedResource"
+  "LocalizedResource.FAILED" [ label = FAILED ];
+  "LocalizedResource.DOWNLOADING" [ label = DOWNLOADING ];
+  "LocalizedResource.DOWNLOADING" -> "LocalizedResource.DOWNLOADING" [ label = "REQUEST,\nRELEASE" ];
+  "LocalizedResource.DOWNLOADING" -> "LocalizedResource.LOCALIZED" [ label = "LOCALIZED" ];
+  "LocalizedResource.DOWNLOADING" -> "LocalizedResource.FAILED" [ label = "LOCALIZATION_FAILED" ];
+  "LocalizedResource.LOCALIZED" [ label = LOCALIZED ];
+  "LocalizedResource.LOCALIZED" -> "LocalizedResource.LOCALIZED" [ label = "REQUEST,\nRELEASE" ];
+  "LocalizedResource.INIT" [ label = INIT ];
+  "LocalizedResource.INIT" -> "LocalizedResource.DOWNLOADING" [ label = "REQUEST" ];
+}
+
+subgraph cluster_Container {
+label="Container"
+  "Container.KILLING" [ label = KILLING ];
+  "Container.KILLING" -> "Container.DONE" [ label = "CONTAINER_RESOURCES_CLEANEDUP" ];
+  "Container.KILLING" -> "Container.KILLING" [ label = "UPDATE_DIAGNOSTICS_MSG,\nRESOURCE_LOCALIZED,\nKILL_CONTAINER,\nRESOURCE_FAILED,\nCONTAINER_LAUNCHED" ];
+  "Container.KILLING" -> "Container.CONTAINER_CLEANEDUP_AFTER_KILL" [ label = "CONTAINER_KILLED_ON_REQUEST" ];
+  "Container.KILLING" -> "Container.EXITED_WITH_FAILURE" [ label = "CONTAINER_EXITED_WITH_FAILURE" ];
+  "Container.KILLING" -> "Container.EXITED_WITH_SUCCESS" [ label = "CONTAINER_EXITED_WITH_SUCCESS" ];
+  "Container.LOCALIZATION_FAILED" [ label = LOCALIZATION_FAILED ];
+  "Container.LOCALIZATION_FAILED" -> "Container.DONE" [ label = "CONTAINER_RESOURCES_CLEANEDUP" ];
+  "Container.LOCALIZATION_FAILED" -> "Container.LOCALIZATION_FAILED" [ label = "UPDATE_DIAGNOSTICS_MSG,\nRESOURCE_LOCALIZED,\nKILL_CONTAINER,\nRESOURCE_FAILED" ];
+  "Container.DONE" [ label = DONE ];
+  "Container.DONE" -> "Container.DONE" [ label = "UPDATE_DIAGNOSTICS_MSG,\nKILL_CONTAINER,\nINIT_CONTAINER,\nRESOURCE_FAILED" ];
+  "Container.RUNNING" [ label = RUNNING ];
+  "Container.RUNNING" -> "Container.RUNNING" [ label = "UPDATE_DIAGNOSTICS_MSG" ];
+  "Container.RUNNING" -> "Container.KILLING" [ label = "KILL_CONTAINER" ];
+  "Container.RUNNING" -> "Container.EXITED_WITH_FAILURE" [ label = "CONTAINER_KILLED_ON_REQUEST,\nCONTAINER_EXITED_WITH_FAILURE" ];
+  "Container.RUNNING" -> "Container.EXITED_WITH_SUCCESS" [ label = "CONTAINER_EXITED_WITH_SUCCESS" ];
+  "Container.NEW" [ label = NEW ];
+  "Container.NEW" -> "Container.NEW" [ label = "UPDATE_DIAGNOSTICS_MSG" ];
+  "Container.NEW" -> "Container.DONE" [ label = "KILL_CONTAINER" ];
+  "Container.NEW" -> "Container.LOCALIZING" [ label = "INIT_CONTAINER" ];
+  "Container.NEW" -> "Container.LOCALIZATION_FAILED" [ label = "INIT_CONTAINER" ];
+  "Container.NEW" -> "Container.LOCALIZED" [ label = "INIT_CONTAINER" ];
+  "Container.EXITED_WITH_SUCCESS" [ label = EXITED_WITH_SUCCESS ];
+  "Container.EXITED_WITH_SUCCESS" -> "Container.DONE" [ label = "CONTAINER_RESOURCES_CLEANEDUP" ];
+  "Container.EXITED_WITH_SUCCESS" -> "Container.EXITED_WITH_SUCCESS" [ label = "UPDATE_DIAGNOSTICS_MSG,\nKILL_CONTAINER" ];
+  "Container.LOCALIZED" [ label = LOCALIZED ];
+  "Container.LOCALIZED" -> "Container.LOCALIZED" [ label = "UPDATE_DIAGNOSTICS_MSG" ];
+  "Container.LOCALIZED" -> "Container.KILLING" [ label = "KILL_CONTAINER" ];
+  "Container.LOCALIZED" -> "Container.EXITED_WITH_FAILURE" [ label = "CONTAINER_EXITED_WITH_FAILURE" ];
+  "Container.LOCALIZED" -> "Container.RUNNING" [ label = "CONTAINER_LAUNCHED" ];
+  "Container.LOCALIZING" [ label = LOCALIZING ];
+  "Container.LOCALIZING" -> "Container.LOCALIZING" [ label = "UPDATE_DIAGNOSTICS_MSG,\nRESOURCE_LOCALIZED" ];
+  "Container.LOCALIZING" -> "Container.LOCALIZED" [ label = "RESOURCE_LOCALIZED" ];
+  "Container.LOCALIZING" -> "Container.KILLING" [ label = "KILL_CONTAINER" ];
+  "Container.LOCALIZING" -> "Container.LOCALIZATION_FAILED" [ label = "RESOURCE_FAILED" ];
+  "Container.CONTAINER_CLEANEDUP_AFTER_KILL" [ label = CONTAINER_CLEANEDUP_AFTER_KILL ];
+  "Container.CONTAINER_CLEANEDUP_AFTER_KILL" -> "Container.DONE" [ label = "CONTAINER_RESOURCES_CLEANEDUP" ];
+  "Container.CONTAINER_CLEANEDUP_AFTER_KILL" -> "Container.CONTAINER_CLEANEDUP_AFTER_KILL" [ label = "UPDATE_DIAGNOSTICS_MSG,\nKILL_CONTAINER" ];
+  "Container.EXITED_WITH_FAILURE" [ label = EXITED_WITH_FAILURE ];
+  "Container.EXITED_WITH_FAILURE" -> "Container.DONE" [ label = "CONTAINER_RESOURCES_CLEANEDUP" ];
+  "Container.EXITED_WITH_FAILURE" -> "Container.EXITED_WITH_FAILURE" [ label = "UPDATE_DIAGNOSTICS_MSG,\nKILL_CONTAINER" ];
+}
+
+subgraph cluster_Application {
+label="Application"
+  "Application.NEW" [ label = NEW ];
+  "Application.NEW" -> "Application.NEW" [ label = "INIT_CONTAINER" ];
+  "Application.NEW" -> "Application.INITING" [ label = "INIT_APPLICATION" ];
+  "Application.FINISHED" [ label = FINISHED ];
+  "Application.FINISHED" -> "Application.FINISHED" [ label = "FINISH_APPLICATION,\nAPPLICATION_LOG_HANDLING_FAILED,\nAPPLICATION_LOG_HANDLING_FINISHED,\nAPPLICATION_LOG_HANDLING_INITED" ];
+  "Application.INITING" [ label = INITING ];
+  "Application.INITING" -> "Application.INITING" [ label = "APPLICATION_CONTAINER_FINISHED,\nINIT_CONTAINER,\nAPPLICATION_LOG_HANDLING_FAILED,\nAPPLICATION_LOG_HANDLING_INITED" ];
+  "Application.INITING" -> "Application.FINISHING_CONTAINERS_WAIT" [ label = "FINISH_APPLICATION" ];
+  "Application.INITING" -> "Application.APPLICATION_RESOURCES_CLEANINGUP" [ label = "FINISH_APPLICATION" ];
+  "Application.INITING" -> "Application.RUNNING" [ label = "APPLICATION_INITED" ];
+  "Application.FINISHING_CONTAINERS_WAIT" [ label = FINISHING_CONTAINERS_WAIT ];
+  "Application.FINISHING_CONTAINERS_WAIT" -> "Application.FINISHING_CONTAINERS_WAIT" [ label = "APPLICATION_CONTAINER_FINISHED,\nFINISH_APPLICATION,\nAPPLICATION_LOG_HANDLING_FAILED,\nAPPLICATION_INITED,\nAPPLICATION_LOG_HANDLING_INITED" ];
+  "Application.FINISHING_CONTAINERS_WAIT" -> "Application.APPLICATION_RESOURCES_CLEANINGUP" [ label = "APPLICATION_CONTAINER_FINISHED" ];
+  "Application.RUNNING" [ label = RUNNING ];
+  "Application.RUNNING" -> "Application.RUNNING" [ label = "APPLICATION_CONTAINER_FINISHED,\nINIT_CONTAINER" ];
+  "Application.RUNNING" -> "Application.FINISHING_CONTAINERS_WAIT" [ label = "FINISH_APPLICATION" ];
+  "Application.RUNNING" -> "Application.APPLICATION_RESOURCES_CLEANINGUP" [ label = "FINISH_APPLICATION" ];
+  "Application.APPLICATION_RESOURCES_CLEANINGUP" [ label = APPLICATION_RESOURCES_CLEANINGUP ];
+  "Application.APPLICATION_RESOURCES_CLEANINGUP" -> "Application.APPLICATION_RESOURCES_CLEANINGUP" [ label = "APPLICATION_CONTAINER_FINISHED,\nFINISH_APPLICATION,\nAPPLICATION_LOG_HANDLING_FAILED,\nAPPLICATION_LOG_HANDLING_FINISHED,\nAPPLICATION_INITED,\nAPPLICATION_LOG_HANDLING_INITED" ];
+  "Application.APPLICATION_RESOURCES_CLEANINGUP" -> "Application.FINISHED" [ label = "APPLICATION_RESOURCES_CLEANEDUP" ];
+}
+
+}

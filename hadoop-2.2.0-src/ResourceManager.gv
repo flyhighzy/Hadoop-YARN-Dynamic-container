@@ -1,0 +1,160 @@
+digraph ResourceManager {
+graph [ label="ResourceManager", fontsize=24, fontname=Helvetica];
+node [fontsize=12, fontname=Helvetica];
+edge [fontsize=9, fontcolor=blue, fontname=Arial];
+subgraph cluster_RMContainer {
+label="RMContainer"
+  "RMContainer.RUNNING" [ label = RUNNING ];
+  "RMContainer.RUNNING" -> "RMContainer.RELEASED" [ label = "RELEASED" ];
+  "RMContainer.RUNNING" -> "RMContainer.RUNNING" [ label = "EXPIRE" ];
+  "RMContainer.RUNNING" -> "RMContainer.KILLED" [ label = "KILL" ];
+  "RMContainer.RUNNING" -> "RMContainer.COMPLETED" [ label = "FINISHED" ];
+  "RMContainer.RESERVED" [ label = RESERVED ];
+  "RMContainer.RESERVED" -> "RMContainer.RELEASED" [ label = "RELEASED" ];
+  "RMContainer.RESERVED" -> "RMContainer.KILLED" [ label = "KILL" ];
+  "RMContainer.RESERVED" -> "RMContainer.RESERVED" [ label = "RESERVED" ];
+  "RMContainer.RESERVED" -> "RMContainer.ALLOCATED" [ label = "START" ];
+  "RMContainer.KILLED" [ label = KILLED ];
+  "RMContainer.KILLED" -> "RMContainer.KILLED" [ label = "RELEASED,\nEXPIRE,\nKILL,\nFINISHED" ];
+  "RMContainer.EXPIRED" [ label = EXPIRED ];
+  "RMContainer.EXPIRED" -> "RMContainer.EXPIRED" [ label = "RELEASED,KILL" ];
+  "RMContainer.NEW" [ label = NEW ];
+  "RMContainer.NEW" -> "RMContainer.KILLED" [ label = "KILL" ];
+  "RMContainer.NEW" -> "RMContainer.RESERVED" [ label = "RESERVED" ];
+  "RMContainer.NEW" -> "RMContainer.ALLOCATED" [ label = "START" ];
+  "RMContainer.ALLOCATED" [ label = ALLOCATED ];
+  "RMContainer.ALLOCATED" -> "RMContainer.ACQUIRED" [ label = "ACQUIRED" ];
+  "RMContainer.ALLOCATED" -> "RMContainer.EXPIRED" [ label = "EXPIRE" ];
+  "RMContainer.ALLOCATED" -> "RMContainer.KILLED" [ label = "KILL" ];
+  "RMContainer.COMPLETED" [ label = COMPLETED ];
+  "RMContainer.COMPLETED" -> "RMContainer.COMPLETED" [ label = "RELEASED,\nEXPIRE,\nKILL" ];
+  "RMContainer.RELEASED" [ label = RELEASED ];
+  "RMContainer.RELEASED" -> "RMContainer.RELEASED" [ label = "RELEASED,\nEXPIRE,\nKILL,\nFINISHED" ];
+  "RMContainer.ACQUIRED" [ label = ACQUIRED ];
+  "RMContainer.ACQUIRED" -> "RMContainer.RELEASED" [ label = "RELEASED" ];
+  "RMContainer.ACQUIRED" -> "RMContainer.EXPIRED" [ label = "EXPIRE" ];
+  "RMContainer.ACQUIRED" -> "RMContainer.KILLED" [ label = "KILL" ];
+  "RMContainer.ACQUIRED" -> "RMContainer.COMPLETED" [ label = "FINISHED" ];
+  "RMContainer.ACQUIRED" -> "RMContainer.RUNNING" [ label = "LAUNCHED" ];
+}
+
+subgraph cluster_RMApp {
+label="RMApp"
+  "RMApp.FAILED" [ label = FAILED ];
+  "RMApp.FAILED" -> "RMApp.FAILED" [ label = "KILL,\nAPP_SAVED,\nAPP_REMOVED,\nNODE_UPDATE" ];
+  "RMApp.NEW_SAVING" [ label = NEW_SAVING ];
+  "RMApp.NEW_SAVING" -> "RMApp.KILLED" [ label = "KILL" ];
+  "RMApp.NEW_SAVING" -> "RMApp.SUBMITTED" [ label = "APP_SAVED" ];
+  "RMApp.NEW_SAVING" -> "RMApp.FAILED" [ label = "APP_REJECTED" ];
+  "RMApp.NEW_SAVING" -> "RMApp.NEW_SAVING" [ label = "NODE_UPDATE" ];
+  "RMApp.FINISHED" [ label = FINISHED ];
+  "RMApp.FINISHED" -> "RMApp.FINISHED" [ label = "ATTEMPT_UNREGISTERED,\nKILL,\nATTEMPT_FINISHED,\nAPP_REMOVED,\nNODE_UPDATE" ];
+  "RMApp.SUBMITTED" [ label = SUBMITTED ];
+  "RMApp.SUBMITTED" -> "RMApp.KILLED" [ label = "KILL" ];
+  "RMApp.SUBMITTED" -> "RMApp.ACCEPTED" [ label = "APP_ACCEPTED" ];
+  "RMApp.SUBMITTED" -> "RMApp.FAILED" [ label = "APP_REJECTED" ];
+  "RMApp.SUBMITTED" -> "RMApp.SUBMITTED" [ label = "NODE_UPDATE" ];
+  "RMApp.NEW" [ label = NEW ];
+  "RMApp.NEW" -> "RMApp.KILLED" [ label = "KILL" ];
+  "RMApp.NEW" -> "RMApp.FAILED" [ label = "APP_REJECTED" ];
+  "RMApp.NEW" -> "RMApp.SUBMITTED" [ label = "RECOVER" ];
+  "RMApp.NEW" -> "RMApp.NEW_SAVING" [ label = "START" ];
+  "RMApp.NEW" -> "RMApp.NEW" [ label = "NODE_UPDATE" ];
+  "RMApp.REMOVING" [ label = REMOVING ];
+  "RMApp.REMOVING" -> "RMApp.KILLED" [ label = "KILL" ];
+  "RMApp.REMOVING" -> "RMApp.FINISHED" [ label = "ATTEMPT_FINISHED" ];
+  "RMApp.REMOVING" -> "RMApp.FINISHING" [ label = "APP_REMOVED" ];
+  "RMApp.REMOVING" -> "RMApp.REMOVING" [ label = "NODE_UPDATE" ];
+  "RMApp.RUNNING" [ label = RUNNING ];
+  "RMApp.RUNNING" -> "RMApp.REMOVING" [ label = "ATTEMPT_UNREGISTERED" ];
+  "RMApp.RUNNING" -> "RMApp.KILLED" [ label = "KILL" ];
+  "RMApp.RUNNING" -> "RMApp.SUBMITTED" [ label = "ATTEMPT_FAILED" ];
+  "RMApp.RUNNING" -> "RMApp.FAILED" [ label = "ATTEMPT_FAILED" ];
+  "RMApp.RUNNING" -> "RMApp.FINISHED" [ label = "ATTEMPT_FINISHED" ];
+  "RMApp.RUNNING" -> "RMApp.RUNNING" [ label = "NODE_UPDATE" ];
+  "RMApp.ACCEPTED" [ label = ACCEPTED ];
+  "RMApp.ACCEPTED" -> "RMApp.RUNNING" [ label = "ATTEMPT_REGISTERED" ];
+  "RMApp.ACCEPTED" -> "RMApp.KILLED" [ label = "KILL" ];
+  "RMApp.ACCEPTED" -> "RMApp.SUBMITTED" [ label = "ATTEMPT_FAILED" ];
+  "RMApp.ACCEPTED" -> "RMApp.FAILED" [ label = "ATTEMPT_FAILED" ];
+  "RMApp.ACCEPTED" -> "RMApp.ACCEPTED" [ label = "NODE_UPDATE" ];
+  "RMApp.FINISHING" [ label = FINISHING ];
+  "RMApp.FINISHING" -> "RMApp.FINISHED" [ label = "KILL,\nATTEMPT_FINISHED" ];
+  "RMApp.FINISHING" -> "RMApp.FINISHING" [ label = "APP_REMOVED,\nNODE_UPDATE" ];
+  "RMApp.KILLED" [ label = KILLED ];
+  "RMApp.KILLED" -> "RMApp.KILLED" [ label = "KILL,\nAPP_SAVED,\nATTEMPT_FAILED,\nATTEMPT_FINISHED,\nAPP_REMOVED,\nAPP_ACCEPTED,\nNODE_UPDATE,\nAPP_REJECTED,\nATTEMPT_KILLED" ];
+}
+
+subgraph cluster_RMNode {
+label="RMNode"
+  "RMNode.REBOOTED" [ label = REBOOTED ];
+  "RMNode.LOST" [ label = LOST ];
+  "RMNode.RUNNING" [ label = RUNNING ];
+  "RMNode.RUNNING" -> "RMNode.LOST" [ label = "EXPIRE" ];
+  "RMNode.RUNNING" -> "RMNode.RUNNING" [ label = "STATUS_UPDATE,\nCLEANUP_CONTAINER,\nRECONNECTED,\nCLEANUP_APP" ];
+  "RMNode.RUNNING" -> "RMNode.UNHEALTHY" [ label = "STATUS_UPDATE" ];
+  "RMNode.RUNNING" -> "RMNode.REBOOTED" [ label = "REBOOTING" ];
+  "RMNode.RUNNING" -> "RMNode.DECOMMISSIONED" [ label = "DECOMMISSION" ];
+  "RMNode.DECOMMISSIONED" [ label = DECOMMISSIONED ];
+  "RMNode.UNHEALTHY" [ label = UNHEALTHY ];
+  "RMNode.UNHEALTHY" -> "RMNode.LOST" [ label = "EXPIRE" ];
+  "RMNode.UNHEALTHY" -> "RMNode.RUNNING" [ label = "STATUS_UPDATE" ];
+  "RMNode.UNHEALTHY" -> "RMNode.UNHEALTHY" [ label = "STATUS_UPDATE,\nCLEANUP_CONTAINER,\nCLEANUP_APP,\nRECONNECTED" ];
+  "RMNode.UNHEALTHY" -> "RMNode.REBOOTED" [ label = "REBOOTING" ];
+  "RMNode.UNHEALTHY" -> "RMNode.DECOMMISSIONED" [ label = "DECOMMISSION" ];
+  "RMNode.NEW" [ label = NEW ];
+  "RMNode.NEW" -> "RMNode.RUNNING" [ label = "STARTED" ];
+}
+
+subgraph cluster_RMAppAttempt {
+label="RMAppAttempt"
+  "RMAppAttempt.FAILED" [ label = FAILED ];
+  "RMAppAttempt.FAILED" -> "RMAppAttempt.FAILED" [ label = "CONTAINER_FINISHED,\nUNREGISTERED,\nEXPIRE,\nCONTAINER_ALLOCATED,\nKILL,\nSTATUS_UPDATE" ];
+  "RMAppAttempt.FINISHED" [ label = FINISHED ];
+  "RMAppAttempt.FINISHED" -> "RMAppAttempt.FINISHED" [ label = "CONTAINER_FINISHED,\nUNREGISTERED,\nEXPIRE,\nCONTAINER_ALLOCATED,\nKILL" ];
+  "RMAppAttempt.SUBMITTED" [ label = SUBMITTED ];
+  "RMAppAttempt.SUBMITTED" -> "RMAppAttempt.SCHEDULED" [ label = "APP_ACCEPTED" ];
+  "RMAppAttempt.SUBMITTED" -> "RMAppAttempt.LAUNCHED_UNMANAGED_SAVING" [ label = "APP_ACCEPTED" ];
+  "RMAppAttempt.SUBMITTED" -> "RMAppAttempt.FAILED" [ label = "REGISTERED,\nAPP_REJECTED" ];
+  "RMAppAttempt.SUBMITTED" -> "RMAppAttempt.KILLED" [ label = "KILL" ];
+  "RMAppAttempt.RECOVERED" [ label = RECOVERED ];
+  "RMAppAttempt.RECOVERED" -> "RMAppAttempt.RECOVERED" [ label = "LAUNCHED,\nATTEMPT_SAVED,\nAPP_REJECTED,\nKILL,\nSTATUS_UPDATE,\nCONTAINER_FINISHED,\nLAUNCH_FAILED,\nAPP_ACCEPTED,\nCONTAINER_ACQUIRED,\nSTART,\nUNREGISTERED,\nEXPIRE,\nREGISTERED,\nCONTAINER_ALLOCATED" ];
+  "RMAppAttempt.ALLOCATED" [ label = ALLOCATED ];
+  "RMAppAttempt.ALLOCATED" -> "RMAppAttempt.FAILED" [ label = "CONTAINER_FINISHED,\nLAUNCH_FAILED" ];
+  "RMAppAttempt.ALLOCATED" -> "RMAppAttempt.LAUNCHED" [ label = "LAUNCHED" ];
+  "RMAppAttempt.ALLOCATED" -> "RMAppAttempt.ALLOCATED" [ label = "CONTAINER_ACQUIRED" ];
+  "RMAppAttempt.ALLOCATED" -> "RMAppAttempt.KILLED" [ label = "KILL" ];
+  "RMAppAttempt.FINISHING" [ label = FINISHING ];
+  "RMAppAttempt.FINISHING" -> "RMAppAttempt.FINISHING" [ label = "CONTAINER_FINISHED,\nUNREGISTERED,\nCONTAINER_ALLOCATED,\nKILL,\nSTATUS_UPDATE" ];
+  "RMAppAttempt.FINISHING" -> "RMAppAttempt.FINISHED" [ label = "CONTAINER_FINISHED,\nEXPIRE" ];
+  "RMAppAttempt.KILLED" [ label = KILLED ];
+  "RMAppAttempt.KILLED" -> "RMAppAttempt.KILLED" [ label = "CONTAINER_FINISHED,\nLAUNCH_FAILED,\nLAUNCHED,\nAPP_ACCEPTED,\nATTEMPT_SAVED,\nUNREGISTERED,\nREGISTERED,\nEXPIRE,\nAPP_REJECTED,\nCONTAINER_ALLOCATED,\nKILL,\nSTATUS_UPDATE" ];
+  "RMAppAttempt.SCHEDULED" [ label = SCHEDULED ];
+  "RMAppAttempt.SCHEDULED" -> "RMAppAttempt.ALLOCATED_SAVING" [ label = "CONTAINER_ALLOCATED" ];
+  "RMAppAttempt.SCHEDULED" -> "RMAppAttempt.KILLED" [ label = "KILL" ];
+  "RMAppAttempt.LAUNCHED_UNMANAGED_SAVING" [ label = LAUNCHED_UNMANAGED_SAVING ];
+  "RMAppAttempt.LAUNCHED_UNMANAGED_SAVING" -> "RMAppAttempt.LAUNCHED" [ label = "ATTEMPT_SAVED" ];
+  "RMAppAttempt.LAUNCHED_UNMANAGED_SAVING" -> "RMAppAttempt.FAILED" [ label = "REGISTERED" ];
+  "RMAppAttempt.LAUNCHED_UNMANAGED_SAVING" -> "RMAppAttempt.KILLED" [ label = "KILL" ];
+  "RMAppAttempt.ALLOCATED_SAVING" [ label = ALLOCATED_SAVING ];
+  "RMAppAttempt.ALLOCATED_SAVING" -> "RMAppAttempt.ALLOCATED_SAVING" [ label = "CONTAINER_ACQUIRED" ];
+  "RMAppAttempt.ALLOCATED_SAVING" -> "RMAppAttempt.ALLOCATED" [ label = "ATTEMPT_SAVED" ];
+  "RMAppAttempt.ALLOCATED_SAVING" -> "RMAppAttempt.KILLED" [ label = "KILL" ];
+  "RMAppAttempt.NEW" [ label = NEW ];
+  "RMAppAttempt.NEW" -> "RMAppAttempt.RECOVERED" [ label = "RECOVER" ];
+  "RMAppAttempt.NEW" -> "RMAppAttempt.SUBMITTED" [ label = "START" ];
+  "RMAppAttempt.NEW" -> "RMAppAttempt.FAILED" [ label = "REGISTERED" ];
+  "RMAppAttempt.NEW" -> "RMAppAttempt.KILLED" [ label = "KILL" ];
+  "RMAppAttempt.LAUNCHED" [ label = LAUNCHED ];
+  "RMAppAttempt.LAUNCHED" -> "RMAppAttempt.FAILED" [ label = "CONTAINER_FINISHED,\nEXPIRE" ];
+  "RMAppAttempt.LAUNCHED" -> "RMAppAttempt.RUNNING" [ label = "REGISTERED" ];
+  "RMAppAttempt.LAUNCHED" -> "RMAppAttempt.KILLED" [ label = "KILL" ];
+  "RMAppAttempt.RUNNING" [ label = RUNNING ];
+  "RMAppAttempt.RUNNING" -> "RMAppAttempt.FAILED" [ label = "CONTAINER_FINISHED,\nEXPIRE" ];
+  "RMAppAttempt.RUNNING" -> "RMAppAttempt.RUNNING" [ label = "CONTAINER_FINISHED,\nCONTAINER_ACQUIRED,\nCONTAINER_ALLOCATED,\nSTATUS_UPDATE" ];
+  "RMAppAttempt.RUNNING" -> "RMAppAttempt.FINISHING" [ label = "UNREGISTERED" ];
+  "RMAppAttempt.RUNNING" -> "RMAppAttempt.FINISHED" [ label = "UNREGISTERED" ];
+  "RMAppAttempt.RUNNING" -> "RMAppAttempt.KILLED" [ label = "KILL" ];
+}
+
+}
