@@ -804,6 +804,10 @@ public class YarnConfiguration extends Configuration {
           YARN_PREFIX + "http.policy";
   public static final String YARN_HTTP_POLICY_DEFAULT =
           CommonConfigurationKeysPublic.HTTP_POLICY_HTTP_ONLY;
+  
+  public static final String YARN_CONTAINER_ELASTIC = 
+		  YARN_PREFIX + "container.elastic-enabled";
+  public static final boolean DEFAULT_YARN_CONTAINER_ELASTIC = true;
 
   public YarnConfiguration() {
     super();

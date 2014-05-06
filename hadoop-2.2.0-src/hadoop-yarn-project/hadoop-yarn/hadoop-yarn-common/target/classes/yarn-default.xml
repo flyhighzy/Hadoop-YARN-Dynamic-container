@@ -780,5 +780,13 @@
     <name>yarn.client.app-submission.poll-interval</name>
     <value>1000</value>
   </property>
+  
+  <!-- add by Zhao Ying, elastic container configuration -->
+  <property>
+    <description>To enable or disable elastic container feature. elastic container
+    			will dynamically adjust resource for long-run containers.</description>
+    <name>yarn.container.elastic-enalbed</name>
+    <value>true</value>
+  </property>
 
 </configuration>

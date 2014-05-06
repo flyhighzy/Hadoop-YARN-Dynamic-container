@@ -51,5 +51,12 @@ public class TestYarnConfiguration {
         "RM Web Url not resolved correctly. Should not be rmtesting",
         "http://rmtesting:24543", rmWebUrl);
   }
+  
+  @Test
+  public void testContainerElastic() throws Exception {
+	  YarnConfiguration conf = new YarnConfiguration();
+	  Assert.assertEquals(conf.getBoolean(YarnConfiguration.YARN_CONTAINER_ELASTIC, true), 
+			  true);
+  }
 
 }

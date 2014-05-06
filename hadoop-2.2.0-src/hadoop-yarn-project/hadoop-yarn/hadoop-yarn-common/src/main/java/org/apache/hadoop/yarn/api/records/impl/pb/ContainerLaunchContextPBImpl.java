@@ -56,6 +56,7 @@ extends ContainerLaunchContext {
   private Map<String, String> environment = null;
   private List<String> commands = null;
   private Map<ApplicationAccessType, String> applicationACLS = null;
+  private Boolean longRunMark = null;
   
   public ContainerLaunchContextPBImpl() {
     builder = ContainerLaunchContextProto.newBuilder();
@@ -119,6 +120,9 @@ extends ContainerLaunchContext {
     }
     if (this.applicationACLS != null) {
       addApplicationACLs();
+    }
+    if (this.longRunMark != null) {
+    	builder.setLongRunMark(this.longRunMark);
     }
   }
   
@@ -259,6 +263,27 @@ extends ContainerLaunchContext {
     }
     this.tokens = tokens;
   }
+  
+  @Override
+  public Boolean getLongRunMark() {
+	  ContainerLaunchContextProtoOrBuilder p = viaProto ? proto : builder;
+	    if (this.longRunMark != null) {
+	      return this.longRunMark;
+	    }
+	    if (!p.hasLongRunMark()) {
+	      return null;
+	    }
+	    return new Boolean(this.longRunMark);
+  }
+
+  @Override
+	public void setLongRunMark(Boolean longRun) {
+		maybeInitBuilder();
+		if (longRun == null) {
+			builder.clearLongRunMark();
+		}
+		this.longRunMark = longRun;
+	}
 
   @Override
   public Map<String, ByteBuffer> getServiceData() {
@@ -463,4 +488,8 @@ extends ContainerLaunchContext {
   private LocalResourceProto convertToProtoFormat(LocalResource t) {
     return ((LocalResourcePBImpl)t).getProto();
   }
+
+
+
+
 }  

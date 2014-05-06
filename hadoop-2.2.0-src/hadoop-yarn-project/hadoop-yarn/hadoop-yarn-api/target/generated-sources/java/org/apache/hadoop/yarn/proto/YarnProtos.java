@@ -26336,6 +26336,16 @@ public final class YarnProtos {
      */
     org.apache.hadoop.yarn.proto.YarnProtos.ApplicationACLMapProtoOrBuilder getApplicationACLsOrBuilder(
         int index);
+
+    // optional bool longRunMark = 7;
+    /**
+     * <code>optional bool longRunMark = 7;</code>
+     */
+    boolean hasLongRunMark();
+    /**
+     * <code>optional bool longRunMark = 7;</code>
+     */
+    boolean getLongRunMark();
   }
   /**
    * Protobuf type {@code hadoop.yarn.ContainerLaunchContextProto}
@@ -26431,6 +26441,11 @@ public final class YarnProtos {
                 mutable_bitField0_ |= 0x00000020;
               }
               applicationACLs_.add(input.readMessage(org.apache.hadoop.yarn.proto.YarnProtos.ApplicationACLMapProto.PARSER, extensionRegistry));
+              break;
+            }
+            case 56: {
+              bitField0_ |= 0x00000002;
+              longRunMark_ = input.readBool();
               break;
             }
           }
@@ -26678,6 +26693,22 @@ public final class YarnProtos {
       return applicationACLs_.get(index);
     }
 
+    // optional bool longRunMark = 7;
+    public static final int LONGRUNMARK_FIELD_NUMBER = 7;
+    private boolean longRunMark_;
+    /**
+     * <code>optional bool longRunMark = 7;</code>
+     */
+    public boolean hasLongRunMark() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional bool longRunMark = 7;</code>
+     */
+    public boolean getLongRunMark() {
+      return longRunMark_;
+    }
+
     private void initFields() {
       localResources_ = java.util.Collections.emptyList();
       tokens_ = com.google.protobuf.ByteString.EMPTY;
@@ -26685,6 +26716,7 @@ public final class YarnProtos {
       environment_ = java.util.Collections.emptyList();
       command_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       applicationACLs_ = java.util.Collections.emptyList();
+      longRunMark_ = false;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -26715,6 +26747,9 @@ public final class YarnProtos {
       }
       for (int i = 0; i < applicationACLs_.size(); i++) {
         output.writeMessage(6, applicationACLs_.get(i));
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBool(7, longRunMark_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -26754,6 +26789,10 @@ public final class YarnProtos {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(6, applicationACLs_.get(i));
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(7, longRunMark_);
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
       return size;
@@ -26792,6 +26831,11 @@ public final class YarnProtos {
           .equals(other.getCommandList());
       result = result && getApplicationACLsList()
           .equals(other.getApplicationACLsList());
+      result = result && (hasLongRunMark() == other.hasLongRunMark());
+      if (hasLongRunMark()) {
+        result = result && (getLongRunMark()
+            == other.getLongRunMark());
+      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -26828,6 +26872,10 @@ public final class YarnProtos {
       if (getApplicationACLsCount() > 0) {
         hash = (37 * hash) + APPLICATION_ACLS_FIELD_NUMBER;
         hash = (53 * hash) + getApplicationACLsList().hashCode();
+      }
+      if (hasLongRunMark()) {
+        hash = (37 * hash) + LONGRUNMARK_FIELD_NUMBER;
+        hash = (53 * hash) + hashBoolean(getLongRunMark());
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -26970,6 +27018,8 @@ public final class YarnProtos {
         } else {
           applicationACLsBuilder_.clear();
         }
+        longRunMark_ = false;
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
 
@@ -27044,6 +27094,10 @@ public final class YarnProtos {
         } else {
           result.applicationACLs_ = applicationACLsBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.longRunMark_ = longRunMark_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -27176,6 +27230,9 @@ public final class YarnProtos {
               applicationACLsBuilder_.addAllMessages(other.applicationACLs_);
             }
           }
+        }
+        if (other.hasLongRunMark()) {
+          setLongRunMark(other.getLongRunMark());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -28291,6 +28348,39 @@ public final class YarnProtos {
           applicationACLs_ = null;
         }
         return applicationACLsBuilder_;
+      }
+
+      // optional bool longRunMark = 7;
+      private boolean longRunMark_ ;
+      /**
+       * <code>optional bool longRunMark = 7;</code>
+       */
+      public boolean hasLongRunMark() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional bool longRunMark = 7;</code>
+       */
+      public boolean getLongRunMark() {
+        return longRunMark_;
+      }
+      /**
+       * <code>optional bool longRunMark = 7;</code>
+       */
+      public Builder setLongRunMark(boolean value) {
+        bitField0_ |= 0x00000040;
+        longRunMark_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool longRunMark = 7;</code>
+       */
+      public Builder clearLongRunMark() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        longRunMark_ = false;
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.yarn.ContainerLaunchContextProto)
@@ -31467,7 +31557,7 @@ public final class YarnProtos {
       "9\n\014applications\030\007 \003(\0132#.hadoop.yarn.Appl" +
       "icationReportProto\"X\n\025QueueUserACLInfoPr" +
       "oto\022\021\n\tqueueName\030\001 \001(\t\022,\n\010userAcls\030\002 \003(\016" +
-      "2\032.hadoop.yarn.QueueACLProto\"\257\002\n\033Contain" +
+      "2\032.hadoop.yarn.QueueACLProto\"\304\002\n\033Contain" +
       "erLaunchContextProto\022@\n\016localResources\030\001" +
       " \003(\0132(.hadoop.yarn.StringLocalResourceMa",
       "pProto\022\016\n\006tokens\030\002 \001(\014\0226\n\014service_data\030\003" +
@@ -31475,40 +31565,41 @@ public final class YarnProtos {
       "\n\013environment\030\004 \003(\0132!.hadoop.yarn.String" +
       "StringMapProto\022\017\n\007command\030\005 \003(\t\022=\n\020appli" +
       "cation_ACLs\030\006 \003(\0132#.hadoop.yarn.Applicat" +
-      "ionACLMapProto\"\262\001\n\024ContainerStatusProto\022" +
-      "3\n\014container_id\030\001 \001(\0132\035.hadoop.yarn.Cont" +
-      "ainerIdProto\022/\n\005state\030\002 \001(\0162 .hadoop.yar" +
-      "n.ContainerStateProto\022\030\n\013diagnostics\030\003 \001" +
-      "(\t:\003N/A\022\032\n\013exit_status\030\004 \001(\005:\005-1000\"Z\n\033S",
-      "tringLocalResourceMapProto\022\013\n\003key\030\001 \001(\t\022" +
-      ".\n\005value\030\002 \001(\0132\037.hadoop.yarn.LocalResour" +
-      "ceProto\"2\n\024StringStringMapProto\022\013\n\003key\030\001" +
-      " \001(\t\022\r\n\005value\030\002 \001(\t\"1\n\023StringBytesMapPro" +
-      "to\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\014*?\n\023Contai" +
-      "nerStateProto\022\t\n\005C_NEW\020\001\022\r\n\tC_RUNNING\020\002\022" +
-      "\016\n\nC_COMPLETE\020\003*\204\001\n\031YarnApplicationState" +
-      "Proto\022\007\n\003NEW\020\001\022\016\n\nNEW_SAVING\020\002\022\r\n\tSUBMIT" +
-      "TED\020\003\022\014\n\010ACCEPTED\020\004\022\013\n\007RUNNING\020\005\022\014\n\010FINI" +
-      "SHED\020\006\022\n\n\006FAILED\020\007\022\n\n\006KILLED\020\010*c\n\033FinalA",
-      "pplicationStatusProto\022\021\n\rAPP_UNDEFINED\020\000" +
-      "\022\021\n\rAPP_SUCCEEDED\020\001\022\016\n\nAPP_FAILED\020\002\022\016\n\nA" +
-      "PP_KILLED\020\003*H\n\034LocalResourceVisibilityPr" +
-      "oto\022\n\n\006PUBLIC\020\001\022\013\n\007PRIVATE\020\002\022\017\n\013APPLICAT" +
-      "ION\020\003*<\n\026LocalResourceTypeProto\022\013\n\007ARCHI" +
-      "VE\020\001\022\010\n\004FILE\020\002\022\013\n\007PATTERN\020\003*s\n\016NodeState" +
-      "Proto\022\n\n\006NS_NEW\020\001\022\016\n\nNS_RUNNING\020\002\022\020\n\014NS_" +
-      "UNHEALTHY\020\003\022\025\n\021NS_DECOMMISSIONED\020\004\022\013\n\007NS" +
-      "_LOST\020\005\022\017\n\013NS_REBOOTED\020\006*0\n\016AMCommandPro" +
-      "to\022\r\n\tAM_RESYNC\020\001\022\017\n\013AM_SHUTDOWN\020\002*N\n\032Ap",
-      "plicationAccessTypeProto\022\026\n\022APPACCESS_VI" +
-      "EW_APP\020\001\022\030\n\024APPACCESS_MODIFY_APP\020\002*/\n\017Qu" +
-      "eueStateProto\022\r\n\tQ_STOPPED\020\001\022\r\n\tQ_RUNNIN" +
-      "G\020\002*H\n\rQueueACLProto\022\034\n\030QACL_SUBMIT_APPL" +
-      "ICATIONS\020\001\022\031\n\025QACL_ADMINISTER_QUEUE\020\002*n\n" +
-      "\030ContainerExitStatusProto\022\013\n\007SUCCESS\020\000\022\024" +
-      "\n\007INVALID\020\230\370\377\377\377\377\377\377\377\001\022\024\n\007ABORTED\020\234\377\377\377\377\377\377\377" +
-      "\377\001\022\031\n\014DISKS_FAILED\020\233\377\377\377\377\377\377\377\377\001B0\n\034org.apa" +
-      "che.hadoop.yarn.protoB\nYarnProtos\210\001\001\240\001\001"
+      "ionACLMapProto\022\023\n\013longRunMark\030\007 \001(\010\"\262\001\n\024" +
+      "ContainerStatusProto\0223\n\014container_id\030\001 \001" +
+      "(\0132\035.hadoop.yarn.ContainerIdProto\022/\n\005sta" +
+      "te\030\002 \001(\0162 .hadoop.yarn.ContainerStatePro" +
+      "to\022\030\n\013diagnostics\030\003 \001(\t:\003N/A\022\032\n\013exit_sta",
+      "tus\030\004 \001(\005:\005-1000\"Z\n\033StringLocalResourceM" +
+      "apProto\022\013\n\003key\030\001 \001(\t\022.\n\005value\030\002 \001(\0132\037.ha" +
+      "doop.yarn.LocalResourceProto\"2\n\024StringSt" +
+      "ringMapProto\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t" +
+      "\"1\n\023StringBytesMapProto\022\013\n\003key\030\001 \001(\t\022\r\n\005" +
+      "value\030\002 \001(\014*?\n\023ContainerStateProto\022\t\n\005C_" +
+      "NEW\020\001\022\r\n\tC_RUNNING\020\002\022\016\n\nC_COMPLETE\020\003*\204\001\n" +
+      "\031YarnApplicationStateProto\022\007\n\003NEW\020\001\022\016\n\nN" +
+      "EW_SAVING\020\002\022\r\n\tSUBMITTED\020\003\022\014\n\010ACCEPTED\020\004" +
+      "\022\013\n\007RUNNING\020\005\022\014\n\010FINISHED\020\006\022\n\n\006FAILED\020\007\022",
+      "\n\n\006KILLED\020\010*c\n\033FinalApplicationStatusPro" +
+      "to\022\021\n\rAPP_UNDEFINED\020\000\022\021\n\rAPP_SUCCEEDED\020\001" +
+      "\022\016\n\nAPP_FAILED\020\002\022\016\n\nAPP_KILLED\020\003*H\n\034Loca" +
+      "lResourceVisibilityProto\022\n\n\006PUBLIC\020\001\022\013\n\007" +
+      "PRIVATE\020\002\022\017\n\013APPLICATION\020\003*<\n\026LocalResou" +
+      "rceTypeProto\022\013\n\007ARCHIVE\020\001\022\010\n\004FILE\020\002\022\013\n\007P" +
+      "ATTERN\020\003*s\n\016NodeStateProto\022\n\n\006NS_NEW\020\001\022\016" +
+      "\n\nNS_RUNNING\020\002\022\020\n\014NS_UNHEALTHY\020\003\022\025\n\021NS_D" +
+      "ECOMMISSIONED\020\004\022\013\n\007NS_LOST\020\005\022\017\n\013NS_REBOO" +
+      "TED\020\006*0\n\016AMCommandProto\022\r\n\tAM_RESYNC\020\001\022\017",
+      "\n\013AM_SHUTDOWN\020\002*N\n\032ApplicationAccessType" +
+      "Proto\022\026\n\022APPACCESS_VIEW_APP\020\001\022\030\n\024APPACCE" +
+      "SS_MODIFY_APP\020\002*/\n\017QueueStateProto\022\r\n\tQ_" +
+      "STOPPED\020\001\022\r\n\tQ_RUNNING\020\002*H\n\rQueueACLProt" +
+      "o\022\034\n\030QACL_SUBMIT_APPLICATIONS\020\001\022\031\n\025QACL_" +
+      "ADMINISTER_QUEUE\020\002*n\n\030ContainerExitStatu" +
+      "sProto\022\013\n\007SUCCESS\020\000\022\024\n\007INVALID\020\230\370\377\377\377\377\377\377\377" +
+      "\001\022\024\n\007ABORTED\020\234\377\377\377\377\377\377\377\377\001\022\031\n\014DISKS_FAILED\020" +
+      "\233\377\377\377\377\377\377\377\377\001B0\n\034org.apache.hadoop.yarn.pro" +
+      "toB\nYarnProtos\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -31670,7 +31761,7 @@ public final class YarnProtos {
           internal_static_hadoop_yarn_ContainerLaunchContextProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_yarn_ContainerLaunchContextProto_descriptor,
-              new java.lang.String[] { "LocalResources", "Tokens", "ServiceData", "Environment", "Command", "ApplicationACLs", });
+              new java.lang.String[] { "LocalResources", "Tokens", "ServiceData", "Environment", "Command", "ApplicationACLs", "LongRunMark", });
           internal_static_hadoop_yarn_ContainerStatusProto_descriptor =
             getDescriptor().getMessageTypes().get(26);
           internal_static_hadoop_yarn_ContainerStatusProto_fieldAccessorTable = new

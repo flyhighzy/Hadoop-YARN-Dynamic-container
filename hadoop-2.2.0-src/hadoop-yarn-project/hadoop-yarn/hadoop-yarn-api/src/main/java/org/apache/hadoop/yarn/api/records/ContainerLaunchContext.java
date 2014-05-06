@@ -39,6 +39,7 @@ import org.apache.hadoop.yarn.util.Records;
  *     <li>{@link Resource} allocated to the container.</li>
  *     <li>User to whom the container is allocated.</li>
  *     <li>Security tokens (if security is enabled).</li>
+ *     <li>Long-run container mark(which will be used to do elastic resource schedule. </li>
  *     <li>
  *       {@link LocalResource} necessary for running the container such
  *       as binaries, jar, shared-objects, side-files etc. 
@@ -70,6 +71,25 @@ public abstract class ContainerLaunchContext {
     container.setServiceData(serviceData);
     container.setTokens(tokens);
     container.setApplicationACLs(acls);
+    return container;
+  }
+  
+  @Public
+  @Stable
+  public static ContainerLaunchContext newInstance(
+      Map<String, LocalResource> localResources,
+      Map<String, String> environment, List<String> commands,
+      Map<String, ByteBuffer> serviceData,  ByteBuffer tokens,
+      Map<ApplicationAccessType, String> acls, Boolean longRun) {
+    ContainerLaunchContext container =
+        Records.newRecord(ContainerLaunchContext.class);
+    container.setLocalResources(localResources);
+    container.setEnvironment(environment);
+    container.setCommands(commands);
+    container.setServiceData(serviceData);
+    container.setTokens(tokens);
+    container.setApplicationACLs(acls);
+    container.setLongRunMark(longRun);
     return container;
   }
 
@@ -196,4 +216,20 @@ public abstract class ContainerLaunchContext {
   @Public
   @Stable
   public abstract  void setApplicationACLs(Map<ApplicationAccessType, String> acls);
+  
+  /**
+   * Get the <code>longRunMark</code> mark for the container.
+   * @return the <code>longRunMark</code> value.
+   */
+  @Public
+  @Stable
+  public abstract Boolean getLongRunMark();
+  
+  /**
+   * Set the <code>longRunMark</code> for the container.
+   * @param longRun <code>longRunMark</code> for the container
+   */
+  @Public
+  @Stable
+  public abstract void setLongRunMark(Boolean longRun);
 }
