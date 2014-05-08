@@ -807,8 +807,16 @@ public class YarnConfiguration extends Configuration {
   
   public static final String YARN_CONTAINER_ELASTIC = 
 		  YARN_PREFIX + "container.elastic-enabled";
-  public static final boolean DEFAULT_YARN_CONTAINER_ELASTIC = true;
+  public static final boolean DEFAULT_YARN_CONTAINER_ELASTIC = false;
+  
+  public static final String YARN_CONTAINER_ELASTIC_EXPAND_THRESHOLD = 
+		  YARN_PREFIX + "container.elastic.expand.threshold";
+  public static final double DEFAULT_YARN_CONTAINER_ELASTIC_EXPAND_THRESHOLD = 0.8;
 
+  public static final String YARN_CONTAINER_ELASTIC_DECREASE_THRESHOLD = 
+		  YARN_PREFIX + "container.elastic.decrease.threshold";
+  public static final double DEFAULT_YARN_CONTAINER_ELASTIC_DECREASE_THRESHOLD = 0.3;
+  
   public YarnConfiguration() {
     super();
   }

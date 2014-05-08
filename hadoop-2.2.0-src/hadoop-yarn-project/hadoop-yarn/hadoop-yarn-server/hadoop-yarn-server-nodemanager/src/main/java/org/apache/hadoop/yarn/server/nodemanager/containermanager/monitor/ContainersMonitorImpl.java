@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.yarn.server.nodemanager.containermanager.monitor;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,8 +38,8 @@ import org.apache.hadoop.yarn.event.Dispatcher;
 import org.apache.hadoop.yarn.server.nodemanager.ContainerExecutor;
 import org.apache.hadoop.yarn.server.nodemanager.Context;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.container.ContainerKillEvent;
-import org.apache.hadoop.yarn.util.ResourceCalculatorProcessTree;
 import org.apache.hadoop.yarn.util.ResourceCalculatorPlugin;
+import org.apache.hadoop.yarn.util.ResourceCalculatorProcessTree;
 
 import com.google.common.base.Preconditions;
 
@@ -68,6 +69,9 @@ public class ContainersMonitorImpl extends AbstractService implements
 
   private boolean pmemCheckEnabled;
   private boolean vmemCheckEnabled;
+  private boolean containerElasticEnabled;
+  private double containerExpandRatio;
+  private double containerDecreaseRatio;
 
   private static final long UNKNOWN_MEMORY_LIMIT = -1L;
 
@@ -111,7 +115,15 @@ public class ContainersMonitorImpl extends AbstractService implements
     // the UI.
     // ///////// Physical memory configuration //////
     this.maxPmemAllottedForContainers = configuredPMemForContainers;
-
+    
+    // ///////// Container Elastic configuration //////
+    this.containerElasticEnabled = conf.getBoolean(YarnConfiguration.YARN_CONTAINER_ELASTIC,
+    						YarnConfiguration.DEFAULT_YARN_CONTAINER_ELASTIC);
+    this.containerExpandRatio = conf.getDouble(YarnConfiguration.YARN_CONTAINER_ELASTIC_EXPAND_THRESHOLD, 
+    						YarnConfiguration.DEFAULT_YARN_CONTAINER_ELASTIC_EXPAND_THRESHOLD);
+    this.containerDecreaseRatio = conf.getDouble(YarnConfiguration.YARN_CONTAINER_ELASTIC_DECREASE_THRESHOLD, 
+    						YarnConfiguration.DEFAULT_YARN_CONTAINER_ELASTIC_DECREASE_THRESHOLD);
+    
     // ///////// Virtual memory configuration //////
     float vmemRatio = conf.getFloat(YarnConfiguration.NM_VMEM_PMEM_RATIO,
         YarnConfiguration.DEFAULT_NM_VMEM_PMEM_RATIO);
@@ -201,14 +213,17 @@ public class ContainersMonitorImpl extends AbstractService implements
     private ResourceCalculatorProcessTree pTree;
     private long vmemLimit;
     private long pmemLimit;
+    private boolean longRunMark;
 
     public ProcessTreeInfo(ContainerId containerId, String pid,
-        ResourceCalculatorProcessTree pTree, long vmemLimit, long pmemLimit) {
+        ResourceCalculatorProcessTree pTree, long vmemLimit, long pmemLimit,
+        boolean longRunMark) {
       this.containerId = containerId;
       this.pid = pid;
       this.pTree = pTree;
       this.vmemLimit = vmemLimit;
       this.pmemLimit = pmemLimit;
+      this.longRunMark = longRunMark;
     }
 
     public ContainerId getContainerId() {
@@ -241,8 +256,39 @@ public class ContainersMonitorImpl extends AbstractService implements
     public long getPmemLimit() {
       return this.pmemLimit;
     }
+    
+    public void setPmemLimit(long memLimit) {
+    	this.pmemLimit = memLimit;
+    }
+    
+    public boolean getLongRunMark() {
+    	return this.longRunMark;
+    }
   }
 
+  /**
+   * Get the total memory allocated for containers on this node.
+   * 
+   * Get container list from context and add memory allocated for them
+   * all together.
+   * 
+   * @return a long int represents total memory allocated in Byte.
+   */
+  long getTotalMemoryInUse() {
+	  //ConcurrentMap<ContainerId, Container>  containers = this.context.getContainers();
+	  synchronized (this.trackingContainers) {
+		  long totalMemoryAllocated = 0;
+		  for(Iterator<Map.Entry<ContainerId, ProcessTreeInfo>> it =
+				  this.trackingContainers.entrySet().iterator(); it.hasNext();) {
+			  Map.Entry<ContainerId, ProcessTreeInfo> entry = it.next();
+			  ProcessTreeInfo ptInfo = entry.getValue();
+			  totalMemoryAllocated += ptInfo.getPmemLimit();
+		  }
+		  return totalMemoryAllocated;
+	  }
+	  
+  }
+  
 
   /**
    * Check whether a container's process tree's current memory usage is over
@@ -401,6 +447,8 @@ public class ContainersMonitorImpl extends AbstractService implements
                      pId, containerId.toString()) +
                 formatUsageString(currentVmemUsage, vmemLimit, currentPmemUsage, pmemLimit));
 
+            
+            
             boolean isMemoryOverLimit = false;
             String msg = "";
             if (isVmemCheckEnabled()
@@ -450,6 +498,11 @@ public class ContainersMonitorImpl extends AbstractService implements
               vmemStillInUsage += currentVmemUsage;
               pmemStillInUsage += currentPmemUsage;
             }
+            
+            //adjust long-run container's memory limit.
+            if(ptInfo.getLongRunMark()) {
+            	updateLongRunContainerResource(containerId, curMemUsageOfAgedProcesses, pmemLimit);
+            }
           } catch (Exception e) {
             // Log the exception and proceed to the next container.
             LOG.warn("Uncaught exception in ContainerMemoryManager "
@@ -467,7 +520,55 @@ public class ContainersMonitorImpl extends AbstractService implements
       }
     }
 
-    private String formatErrorMessage(String memTypeExceeded,
+    /**
+     * check if current container memory usage exceed the threshold.
+     * If larger than the expand threshold, then first check if the node have extra 
+     * memory for use, if yes, expand container's memory to 1.2 times of original
+     * allocation. 
+     * If smaller than the decrease threshold, then decrease container's memory 
+     * to half of original allocation.
+     * 
+     * @param containerId, id of container to be checked.
+     * @param curMemUsageOfAgedProcesses, current memory usage.
+     * @param pmemLimt, physical memory allocated to the container.
+     */
+    private void updateLongRunContainerResource(ContainerId containerId,
+			long curMemUsageOfAgedProcesses, long pmemLimit) {
+		BigDecimal b1 = new BigDecimal(Double.toString(curMemUsageOfAgedProcesses));
+		BigDecimal b2 = new BigDecimal(Double.toString(pmemLimit));
+		double ratio = b1.divide(b2, 2, BigDecimal.ROUND_HALF_UP).doubleValue();
+		
+		long newPmemLimit = pmemLimit;
+		boolean memChanged = false;
+		if(ratio >= getContainerExpandRatio()) {
+			// expand container's memory limit
+			// memory already allocated to containers.
+			long memoryTotalInUse = getTotalMemoryInUse();
+			// total memory configured for containers
+			long memoryTotalAvailable = getPmemAllocatedForContainers();
+			if(memoryTotalAvailable - memoryTotalInUse >= (long) pmemLimit * 0.2) {
+				//node have enough memory to expand
+				newPmemLimit = (long) (pmemLimit * 1.2);
+			}
+			else {
+				newPmemLimit = pmemLimit + (memoryTotalAvailable - memoryTotalInUse);
+			}
+			memChanged = true;
+		}
+		else if(ratio <= getContainerDecreaseRatio()) {
+			//decrease container's memory limit
+			newPmemLimit = (long) (pmemLimit * 0.5);
+			memChanged = true;
+		}
+		// update trackingContainers
+		if(memChanged) {
+			ProcessTreeInfo ptInfo = trackingContainers.get(containerId);
+			ptInfo.setPmemLimit(newPmemLimit);
+			trackingContainers.put(containerId, ptInfo);
+		}
+	}
+
+	private String formatErrorMessage(String memTypeExceeded,
         long currentVmemUsage, long vmemLimit,
         long currentPmemUsage, long pmemLimit,
         String pId, ContainerId containerId, ResourceCalculatorProcessTree pTree) {
@@ -522,6 +623,21 @@ public class ContainersMonitorImpl extends AbstractService implements
   public boolean isVmemCheckEnabled() {
     return this.vmemCheckEnabled;
   }
+  
+  @Override
+  public boolean isContainerElasticEnabled() {
+	return this.containerElasticEnabled;
+  }
+
+	@Override
+	public double getContainerExpandRatio() {
+		return this.containerExpandRatio;
+	}
+
+	@Override
+	public double getContainerDecreaseRatio() {
+		return this.containerDecreaseRatio;
+	}
 
   @Override
   public void handle(ContainersMonitorEvent monitoringEvent) {
@@ -538,7 +654,8 @@ public class ContainersMonitorImpl extends AbstractService implements
       synchronized (this.containersToBeAdded) {
         ProcessTreeInfo processTreeInfo =
             new ProcessTreeInfo(containerId, null, null,
-                startEvent.getVmemLimit(), startEvent.getPmemLimit());
+                startEvent.getVmemLimit(), startEvent.getPmemLimit(),
+                startEvent.getLongRunMark());
         this.containersToBeAdded.put(containerId, processTreeInfo);
       }
       break;
@@ -551,4 +668,6 @@ public class ContainersMonitorImpl extends AbstractService implements
       // TODO: Wrong event.
     }
   }
+
+	
 }

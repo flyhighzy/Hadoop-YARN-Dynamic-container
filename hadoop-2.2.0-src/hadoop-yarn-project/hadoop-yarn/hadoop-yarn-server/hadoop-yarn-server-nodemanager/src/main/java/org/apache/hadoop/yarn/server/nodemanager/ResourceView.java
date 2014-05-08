@@ -27,4 +27,10 @@ public interface ResourceView {
   long getPmemAllocatedForContainers();
 
   boolean isPmemCheckEnabled();
+  
+  boolean isContainerElasticEnabled();
+  
+  double getContainerExpandRatio();
+  
+  double getContainerDecreaseRatio();
 }

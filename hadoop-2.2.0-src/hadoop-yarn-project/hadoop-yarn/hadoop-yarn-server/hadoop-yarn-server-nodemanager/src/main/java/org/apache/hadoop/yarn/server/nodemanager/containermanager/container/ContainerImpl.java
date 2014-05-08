@@ -632,10 +632,11 @@ public class ContainerImpl implements Container {
           YarnConfiguration.NM_VMEM_PMEM_RATIO,
           YarnConfiguration.DEFAULT_NM_VMEM_PMEM_RATIO);
       long vmemBytes = (long) (pmemRatio * pmemBytes);
+      boolean longRunMark = container.getLaunchContext().getLongRunMark();
       
       container.dispatcher.getEventHandler().handle(
           new ContainerStartMonitoringEvent(container.containerId,
-              vmemBytes, pmemBytes));
+              vmemBytes, pmemBytes, longRunMark));
       container.metrics.runningContainer();
     }
   }

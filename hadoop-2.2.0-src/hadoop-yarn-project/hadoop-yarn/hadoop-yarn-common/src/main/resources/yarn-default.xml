@@ -785,8 +785,22 @@
   <property>
     <description>To enable or disable elastic container feature. elastic container
     			will dynamically adjust resource for long-run containers.</description>
-    <name>yarn.container.elastic-enalbed</name>
+    <name>yarn.container.elastic-enabled</name>
     <value>true</value>
+  </property>
+  
+  <property>
+    <description>The ratio value used to expand container's memory 
+    			when larger than the original_memory*ratio</description>
+    <name>yarn.container.elastic.expand.threshold</name>
+    <value>0.8</value>
+  </property>
+  
+  <property>
+    <description>The ratio value used to decrease container's memory 
+    			when less than the original_memory*ratio</description>
+    <name>yarn.container.elastic.decrease.threshold</name>
+    <value>0.3</value>
   </property>
 
 </configuration>
