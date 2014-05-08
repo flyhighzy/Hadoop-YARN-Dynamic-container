@@ -94,6 +94,21 @@ public class TestNMWebServer {
       public boolean isPmemCheckEnabled() {
         return true;
       }
+		@Override
+		public boolean isContainerElasticEnabled() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+		@Override
+		public double getContainerExpandRatio() {
+			// TODO Auto-generated method stub
+			return 0.8;
+		}
+		@Override
+		public double getContainerDecreaseRatio() {
+			// TODO Auto-generated method stub
+			return 0.3;
+		}
     };
     Configuration conf = new Configuration();
     conf.set(YarnConfiguration.NM_LOCAL_DIRS, testRootDir.getAbsolutePath());
@@ -152,6 +167,21 @@ public class TestNMWebServer {
       public boolean isPmemCheckEnabled() {
         return true;
       }
+		@Override
+		public boolean isContainerElasticEnabled() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+		@Override
+		public double getContainerExpandRatio() {
+			// TODO Auto-generated method stub
+			return 0.8;
+		}
+		@Override
+		public double getContainerDecreaseRatio() {
+			// TODO Auto-generated method stub
+			return 0.3;
+		}
     };
     Configuration conf = new Configuration();
     conf.set(YarnConfiguration.NM_LOCAL_DIRS, testRootDir.getAbsolutePath());

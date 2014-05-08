@@ -268,7 +268,7 @@ public class TestNodeManagerReboot {
     }
 
     @Override
-    protected NodeStatusUpdater createNodeStatusUpdater(Context context,
+    protected NodeStatusUpdaterImpl createNodeStatusUpdater(Context context,
         Dispatcher dispatcher, NodeHealthCheckerService healthChecker) {
       MockNodeStatusUpdater myNodeStatusUpdater =
           new MockNodeStatusUpdater(context, dispatcher, healthChecker, metrics);

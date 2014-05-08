@@ -188,13 +188,15 @@ public class BuilderUtils {
   }
 
   public static ContainerStatus newContainerStatus(ContainerId containerId,
-      ContainerState containerState, String diagnostics, int exitStatus) {
+      ContainerState containerState, String diagnostics, int exitStatus,
+      Resource resource) {
     ContainerStatus containerStatus = recordFactory
       .newRecordInstance(ContainerStatus.class);
     containerStatus.setState(containerState);
     containerStatus.setContainerId(containerId);
     containerStatus.setDiagnostics(diagnostics);
     containerStatus.setExitStatus(exitStatus);
+    containerStatus.setContainerResource(resource);
     return containerStatus;
   }
 

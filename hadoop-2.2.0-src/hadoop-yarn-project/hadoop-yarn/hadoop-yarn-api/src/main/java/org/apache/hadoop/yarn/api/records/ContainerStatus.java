@@ -44,12 +44,14 @@ public abstract class ContainerStatus {
   @Private
   @Unstable
   public static ContainerStatus newInstance(ContainerId containerId,
-      ContainerState containerState, String diagnostics, int exitStatus) {
+      ContainerState containerState, String diagnostics, int exitStatus,
+      Resource resource) {
     ContainerStatus containerStatus = Records.newRecord(ContainerStatus.class);
     containerStatus.setState(containerState);
     containerStatus.setContainerId(containerId);
     containerStatus.setDiagnostics(diagnostics);
     containerStatus.setExitStatus(exitStatus);
+    containerStatus.setContainerResource(resource);
     return containerStatus;
   }
 
@@ -115,4 +117,18 @@ public abstract class ContainerStatus {
   @Private
   @Unstable
   public abstract void setDiagnostics(String diagnostics);
+  
+  /**
+   * Get <em>container resouce</em> for the container.
+   * Add this because of elastic container feature will change
+   * container's resource dynamically, and NM need to report to RM.
+   * @return Container's Resouce, including memory and cpu.
+   */
+  @Public
+  @Stable
+  public abstract Resource getContainerResource();
+  
+  @Private
+  @Unstable
+  public abstract void setContainerResource(Resource r);
 }

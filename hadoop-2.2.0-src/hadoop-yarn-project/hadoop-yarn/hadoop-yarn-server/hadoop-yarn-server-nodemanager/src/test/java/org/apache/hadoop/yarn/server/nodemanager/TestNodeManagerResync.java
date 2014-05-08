@@ -156,7 +156,7 @@ public class TestNodeManagerResync {
     private int registrationCount = 0;
 
     @Override
-    protected NodeStatusUpdater createNodeStatusUpdater(Context context,
+    protected NodeStatusUpdaterImpl createNodeStatusUpdater(Context context,
         Dispatcher dispatcher, NodeHealthCheckerService healthChecker) {
       return new TestNodeStatusUpdaterImpl1(context, dispatcher,
           healthChecker, metrics);
@@ -203,7 +203,7 @@ public class TestNodeManagerResync {
 
     Thread launchContainersThread = null;
     @Override
-    protected NodeStatusUpdater createNodeStatusUpdater(Context context,
+    protected NodeStatusUpdaterImpl createNodeStatusUpdater(Context context,
         Dispatcher dispatcher, NodeHealthCheckerService healthChecker) {
       return new TestNodeStatusUpdaterImpl2(context, dispatcher,
         healthChecker, metrics);

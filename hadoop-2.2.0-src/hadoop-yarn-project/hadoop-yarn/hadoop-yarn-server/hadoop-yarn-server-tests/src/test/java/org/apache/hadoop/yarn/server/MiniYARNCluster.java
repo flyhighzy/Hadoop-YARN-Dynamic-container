@@ -369,7 +369,7 @@ public class MiniYARNCluster extends CompositeService {
     };
 
     @Override
-    protected NodeStatusUpdater createNodeStatusUpdater(Context context,
+    protected NodeStatusUpdaterImpl createNodeStatusUpdater(Context context,
         Dispatcher dispatcher, NodeHealthCheckerService healthChecker) {
       return new NodeStatusUpdaterImpl(context, dispatcher,
           healthChecker, metrics) {

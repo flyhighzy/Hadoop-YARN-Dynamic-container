@@ -603,7 +603,7 @@ public class TestRMContainerAllocator {
     TaskAttempt attempt = task.getAttempts().values().iterator().next();
     List<ContainerStatus> contStatus = new ArrayList<ContainerStatus>(1);
     contStatus.add(ContainerStatus.newInstance(attempt.getAssignedContainerID(),
-        ContainerState.COMPLETE, "", 0));
+        ContainerState.COMPLETE, "", 0, null));
     Map<ApplicationId,List<ContainerStatus>> statusUpdate =
         new HashMap<ApplicationId,List<ContainerStatus>>(1);
     statusUpdate.put(mrApp.getAppID(), contStatus);
@@ -1711,11 +1711,11 @@ public class TestRMContainerAllocator {
         applicationId, 1);
     ContainerId containerId = ContainerId.newInstance(applicationAttemptId, 1);
     ContainerStatus status = ContainerStatus.newInstance(
-        containerId, ContainerState.RUNNING, "", 0);
+        containerId, ContainerState.RUNNING, "", 0, null);
 
     ContainerStatus abortedStatus = ContainerStatus.newInstance(
         containerId, ContainerState.RUNNING, "",
-        ContainerExitStatus.ABORTED);
+        ContainerExitStatus.ABORTED, null);
     
     TaskAttemptEvent event = allocator.createContainerFinishedEvent(status,
         attemptId);

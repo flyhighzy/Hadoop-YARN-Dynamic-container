@@ -420,7 +420,7 @@ public class TestNodeStatusUpdater {
     
     private MyNodeStatusUpdater3 nodeStatusUpdater;
     @Override
-    protected NodeStatusUpdater createNodeStatusUpdater(Context context,
+    protected NodeStatusUpdaterImpl createNodeStatusUpdater(Context context,
         Dispatcher dispatcher, NodeHealthCheckerService healthChecker) {
       this.nodeStatusUpdater =
           new MyNodeStatusUpdater3(context, dispatcher, healthChecker, metrics);
@@ -443,12 +443,12 @@ public class TestNodeStatusUpdater {
       this.conf = conf;
     }
     @Override
-    protected NodeStatusUpdater createNodeStatusUpdater(Context context,
+    protected NodeStatusUpdaterImpl createNodeStatusUpdater(Context context,
         Dispatcher dispatcher, NodeHealthCheckerService healthChecker) {
       nodeStatusUpdater =
           new MyNodeStatusUpdater5(context, dispatcher, healthChecker,
                                      metrics, conf);
-      return nodeStatusUpdater;
+      return (NodeStatusUpdaterImpl) nodeStatusUpdater;
     }
 
     @Override
@@ -781,7 +781,7 @@ public class TestNodeStatusUpdater {
   public void testNMRegistration() throws InterruptedException {
     nm = new NodeManager() {
       @Override
-      protected NodeStatusUpdater createNodeStatusUpdater(Context context,
+      protected NodeStatusUpdaterImpl createNodeStatusUpdater(Context context,
           Dispatcher dispatcher, NodeHealthCheckerService healthChecker) {
         return new MyNodeStatusUpdater(context, dispatcher, healthChecker,
                                        metrics);
@@ -842,7 +842,7 @@ public class TestNodeStatusUpdater {
     final AtomicInteger numCleanups = new AtomicInteger(0);
     nm = new NodeManager() {
       @Override
-      protected NodeStatusUpdater createNodeStatusUpdater(Context context,
+      protected NodeStatusUpdaterImpl createNodeStatusUpdater(Context context,
           Dispatcher dispatcher, NodeHealthCheckerService healthChecker) {
         MyNodeStatusUpdater myNodeStatusUpdater = new MyNodeStatusUpdater(
             context, dispatcher, healthChecker, metrics);
@@ -925,11 +925,11 @@ public class TestNodeStatusUpdater {
     }
 
     @Override
-    protected NodeStatusUpdater createNodeStatusUpdater(Context context,
+    protected NodeStatusUpdaterImpl createNodeStatusUpdater(Context context,
                                                         Dispatcher dispatcher,
                                                         NodeHealthCheckerService healthChecker) {
       updater = createUpdater(context, dispatcher, healthChecker);
-      return updater;
+      return (NodeStatusUpdaterImpl) updater;
     }
 
     public NodeStatusUpdater getUpdater() {
@@ -1058,7 +1058,7 @@ public class TestNodeStatusUpdater {
 
     nm = new NodeManager() {
       @Override
-      protected NodeStatusUpdater createNodeStatusUpdater(Context context,
+      protected NodeStatusUpdaterImpl createNodeStatusUpdater(Context context,
           Dispatcher dispatcher, NodeHealthCheckerService healthChecker) {
         return new MyNodeStatusUpdater(context, dispatcher, healthChecker,
                                        metrics);
@@ -1123,7 +1123,7 @@ public class TestNodeStatusUpdater {
   public void testCompletedContainerStatusBackup() throws Exception {
     nm = new NodeManager() {
       @Override
-      protected NodeStatusUpdater createNodeStatusUpdater(Context context,
+      protected NodeStatusUpdaterImpl createNodeStatusUpdater(Context context,
           Dispatcher dispatcher, NodeHealthCheckerService healthChecker) {
         MyNodeStatusUpdater2 myNodeStatusUpdater =
             new MyNodeStatusUpdater2(context, dispatcher, healthChecker,
@@ -1262,7 +1262,7 @@ public class TestNodeStatusUpdater {
       ContainerStatus containerStatus =
           BuilderUtils.newContainerStatus(contaierId, containerState,
               "test_containerStatus: id=" + id + ", containerState: "
-                  + containerState, 0);
+                  + containerState, 0, null);
       return containerStatus;
     }
 
@@ -1320,7 +1320,7 @@ public class TestNodeStatusUpdater {
   private NodeManager getNodeManager(final NodeAction nodeHeartBeatAction) {
     return new NodeManager() {
       @Override
-      protected NodeStatusUpdater createNodeStatusUpdater(Context context,
+      protected NodeStatusUpdaterImpl createNodeStatusUpdater(Context context,
           Dispatcher dispatcher, NodeHealthCheckerService healthChecker) {
         MyNodeStatusUpdater myNodeStatusUpdater = new MyNodeStatusUpdater(
             context, dispatcher, healthChecker, metrics);

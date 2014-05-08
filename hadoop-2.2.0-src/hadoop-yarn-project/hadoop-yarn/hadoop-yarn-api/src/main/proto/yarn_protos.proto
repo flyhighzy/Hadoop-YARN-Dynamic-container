@@ -298,6 +298,7 @@ message ContainerStatusProto {
   optional ContainerStateProto state = 2;
   optional string diagnostics = 3 [default = "N/A"];
   optional int32 exit_status = 4 [default = -1000];
+  optional ResourceProto resource = 5;
 }
 
 enum ContainerExitStatusProto {

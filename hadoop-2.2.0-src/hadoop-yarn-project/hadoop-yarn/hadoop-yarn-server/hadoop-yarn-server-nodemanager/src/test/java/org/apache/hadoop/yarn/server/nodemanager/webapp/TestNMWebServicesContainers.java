@@ -124,6 +124,24 @@ public class TestNMWebServicesContainers extends JerseyTest {
         public boolean isPmemCheckEnabled() {
           return true;
         }
+
+		@Override
+		public boolean isContainerElasticEnabled() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public double getContainerExpandRatio() {
+			// TODO Auto-generated method stub
+			return 0.8;
+		}
+
+		@Override
+		public double getContainerDecreaseRatio() {
+			// TODO Auto-generated method stub
+			return 0.3;
+		}
       };
       conf.set(YarnConfiguration.NM_LOCAL_DIRS, testRootDir.getAbsolutePath());
       conf.set(YarnConfiguration.NM_LOG_DIRS, testLogDir.getAbsolutePath());

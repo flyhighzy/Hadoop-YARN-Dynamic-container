@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,6 +46,7 @@ import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.event.Dispatcher;
+import org.apache.hadoop.yarn.event.EventHandler;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.exceptions.YarnRuntimeException;
 import org.apache.hadoop.yarn.factories.RecordFactory;
@@ -60,6 +62,7 @@ import org.apache.hadoop.yarn.server.api.records.MasterKey;
 import org.apache.hadoop.yarn.server.api.records.NodeAction;
 import org.apache.hadoop.yarn.server.api.records.NodeHealthStatus;
 import org.apache.hadoop.yarn.server.api.records.NodeStatus;
+import org.apache.hadoop.yarn.server.nodemanager.NodeManager.NMContext;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.ContainerManagerImpl;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.container.Container;
 import org.apache.hadoop.yarn.server.nodemanager.metrics.NodeManagerMetrics;
@@ -67,7 +70,7 @@ import org.apache.hadoop.yarn.server.nodemanager.metrics.NodeManagerMetrics;
 import com.google.common.annotations.VisibleForTesting;
 
 public class NodeStatusUpdaterImpl extends AbstractService implements
-    NodeStatusUpdater {
+    NodeStatusUpdater, EventHandler<ContextUpdateEvent>{
 
   public static final String YARN_NODEMANAGER_DURATION_TO_TRACK_STOPPED_CONTAINERS =
       YarnConfiguration.NM_PREFIX + "duration-to-track-stopped-containers";
@@ -76,7 +79,7 @@ public class NodeStatusUpdaterImpl extends AbstractService implements
 
   private final Object heartbeatMonitor = new Object();
 
-  private final Context context;
+  private Context context;
   private final Dispatcher dispatcher;
 
   private NodeId nodeId;
@@ -526,6 +529,23 @@ public class NodeStatusUpdaterImpl extends AbstractService implements
         new Thread(statusUpdaterRunnable, "Node Status Updater");
     statusUpdater.start();
   }
+
+	@Override
+	public void handle(ContextUpdateEvent event) {
+		switch(event.getType()) {
+		case CONTAINER_PMEM_UPDATE:
+			ContainerId containerId = event.getContainerId();
+			Container c = event.getContainer();
+			ConcurrentMap<ContainerId, Container> containers = this.context.getContainers();
+			containers.put(containerId, c);
+			NMContext cxt = (NMContext)this.context;
+			cxt.setContainers(containers);
+			this.context = cxt;
+			break;
+		default:
+			break;
+		}
+	}
   
   
 }

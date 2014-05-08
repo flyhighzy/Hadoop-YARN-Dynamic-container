@@ -24,10 +24,12 @@ import org.apache.hadoop.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.ContainerState;
 import org.apache.hadoop.yarn.api.records.ContainerStatus;
+import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.proto.YarnProtos.ContainerIdProto;
 import org.apache.hadoop.yarn.proto.YarnProtos.ContainerStateProto;
 import org.apache.hadoop.yarn.proto.YarnProtos.ContainerStatusProto;
 import org.apache.hadoop.yarn.proto.YarnProtos.ContainerStatusProtoOrBuilder;
+import org.apache.hadoop.yarn.proto.YarnProtos.ResourceProto;
 
 import com.google.protobuf.TextFormat;
 
@@ -39,6 +41,7 @@ public class ContainerStatusPBImpl extends ContainerStatus {
   boolean viaProto = false;
   
   private ContainerId containerId = null;
+  private Resource resource = null;
   
   
   public ContainerStatusPBImpl() {
@@ -80,6 +83,9 @@ public class ContainerStatusPBImpl extends ContainerStatus {
   private void mergeLocalToBuilder() {
     if (containerId != null) {
       builder.setContainerId(convertToProtoFormat(this.containerId));
+    }
+    if (resource != null) {
+    	builder.setResource(convertToProtoFormat(this.resource));
     }
   }
 
@@ -176,6 +182,35 @@ public class ContainerStatusPBImpl extends ContainerStatus {
   private ContainerIdProto convertToProtoFormat(ContainerId t) {
     return ((ContainerIdPBImpl)t).getProto();
   }
+  
+  private ResourcePBImpl convertFromProtoFormat(ResourceProto r) {
+	  return new ResourcePBImpl(r);
+  }
+  
+  private ResourceProto convertToProtoFormat(Resource r) {
+	  return ((ResourcePBImpl)r).getProto();
+  }
+
+	@Override
+	public Resource getContainerResource() {
+		ContainerStatusProtoOrBuilder p = viaProto ? proto : builder;
+	    if (this.resource != null) {
+	      return this.resource;
+	    }
+	    if (!p.hasResource()) {
+	      return null;
+	    }
+	    this.resource =  convertFromProtoFormat(p.getResource());
+	    return this.resource;
+	}
+	
+	@Override
+	public void setContainerResource(Resource r) {
+		maybeInitBuilder();
+	    if (resource == null) 
+	      builder.clearResource();
+	    this.resource = r;
+	}
 
 
 

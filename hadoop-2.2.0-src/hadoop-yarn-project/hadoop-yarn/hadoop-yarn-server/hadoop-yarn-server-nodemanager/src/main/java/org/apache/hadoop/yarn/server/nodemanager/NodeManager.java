@@ -75,7 +75,7 @@ public class NodeManager extends CompositeService
   private Context context;
   private AsyncDispatcher dispatcher;
   private ContainerManagerImpl containerManager;
-  private NodeStatusUpdater nodeStatusUpdater;
+  private NodeStatusUpdaterImpl nodeStatusUpdater;
   private static CompositeServiceShutdownHook nodeManagerShutdownHook; 
   
   private AtomicBoolean isStopping = new AtomicBoolean(false);
@@ -84,7 +84,7 @@ public class NodeManager extends CompositeService
     super(NodeManager.class.getName());
   }
 
-  protected NodeStatusUpdater createNodeStatusUpdater(Context context,
+  protected NodeStatusUpdaterImpl createNodeStatusUpdater(Context context,
       Dispatcher dispatcher, NodeHealthCheckerService healthChecker) {
     return new NodeStatusUpdaterImpl(context, dispatcher, healthChecker,
       metrics);
@@ -159,7 +159,7 @@ public class NodeManager extends CompositeService
 
 
     nodeStatusUpdater =
-        createNodeStatusUpdater(context, dispatcher, nodeHealthChecker);
+        (NodeStatusUpdaterImpl) createNodeStatusUpdater(context, dispatcher, nodeHealthChecker);
 
     NodeResourceMonitor nodeResourceMonitor = createNodeResourceMonitor();
     addService(nodeResourceMonitor);
@@ -175,6 +175,7 @@ public class NodeManager extends CompositeService
     addService(webServer);
     ((NMContext) context).setWebServer(webServer);
 
+    dispatcher.register(ContextUpdateEventType.class, nodeStatusUpdater);
     dispatcher.register(ContainerManagerEventType.class, containerManager);
     dispatcher.register(NodeManagerEventType.class, this);
     addService(dispatcher);
@@ -240,7 +241,7 @@ public class NodeManager extends CompositeService
     private NodeId nodeId = null;
     private final ConcurrentMap<ApplicationId, Application> applications =
         new ConcurrentHashMap<ApplicationId, Application>();
-    private final ConcurrentMap<ContainerId, Container> containers =
+    private ConcurrentMap<ContainerId, Container> containers =
         new ConcurrentSkipListMap<ContainerId, Container>();
 
     private final NMContainerTokenSecretManager containerTokenSecretManager;
@@ -280,6 +281,10 @@ public class NodeManager extends CompositeService
     @Override
     public ConcurrentMap<ContainerId, Container> getContainers() {
       return this.containers;
+    }
+    
+    public void setContainers(ConcurrentMap<ContainerId, Container> containers) {
+    	this.containers = containers;
     }
 
     @Override

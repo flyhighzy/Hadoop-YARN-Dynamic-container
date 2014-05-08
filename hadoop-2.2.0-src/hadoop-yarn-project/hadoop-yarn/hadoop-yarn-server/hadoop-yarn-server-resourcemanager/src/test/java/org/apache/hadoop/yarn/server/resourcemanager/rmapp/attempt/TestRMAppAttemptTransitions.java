@@ -744,7 +744,7 @@ public class TestRMAppAttemptTransitions {
     int exitCode = 123;
     ContainerStatus cs =
         BuilderUtils.newContainerStatus(amContainer.getId(),
-          ContainerState.COMPLETE, containerDiagMsg, exitCode);
+          ContainerState.COMPLETE, containerDiagMsg, exitCode, null);
     applicationAttempt.handle(new RMAppAttemptContainerFinishedEvent(
       applicationAttempt.getAppAttemptId(), cs));
     assertEquals(RMAppAttemptState.FAILED,
@@ -760,7 +760,7 @@ public class TestRMAppAttemptTransitions {
     String containerDiagMsg = "some error";
     int exitCode = 123;
     ContainerStatus cs = BuilderUtils.newContainerStatus(amContainer.getId(),
-        ContainerState.COMPLETE, containerDiagMsg, exitCode);
+        ContainerState.COMPLETE, containerDiagMsg, exitCode, null);
     ApplicationAttemptId appAttemptId = applicationAttempt.getAppAttemptId();
     applicationAttempt.handle(new RMAppAttemptContainerFinishedEvent(
         appAttemptId, cs));
@@ -941,7 +941,7 @@ public class TestRMAppAttemptTransitions {
             BuilderUtils.newContainerStatus(
                 BuilderUtils.newContainerId(
                     applicationAttempt.getAppAttemptId(), 42),
-                ContainerState.COMPLETE, "", 0)));
+                ContainerState.COMPLETE, "", 0, null)));
     testAppAttemptFinishingState(amContainer, finalStatus, trackingUrl,
         diagnostics);
   }
@@ -960,7 +960,7 @@ public class TestRMAppAttemptTransitions {
         new RMAppAttemptContainerFinishedEvent(
             applicationAttempt.getAppAttemptId(),
             BuilderUtils.newContainerStatus(amContainer.getId(),
-                ContainerState.COMPLETE, "", 0)));
+                ContainerState.COMPLETE, "", 0, null)));
     testAppAttemptFinishedState(amContainer, finalStatus, trackingUrl,
         diagnostics, 0, false);
   }

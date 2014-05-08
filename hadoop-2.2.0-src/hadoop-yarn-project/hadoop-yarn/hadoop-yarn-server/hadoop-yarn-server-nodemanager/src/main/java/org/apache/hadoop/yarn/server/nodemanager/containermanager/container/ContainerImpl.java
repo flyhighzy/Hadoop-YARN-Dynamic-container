@@ -80,7 +80,7 @@ public class ContainerImpl implements Container {
   private final ContainerLaunchContext launchContext;
   private final ContainerTokenIdentifier containerTokenIdentifier;
   private final ContainerId containerId;
-  private final Resource resource;
+  private Resource resource;
   private final String user;
   private int exitCode = ContainerExitStatus.INVALID;
   private final StringBuilder diagnostics;
@@ -380,7 +380,7 @@ public class ContainerImpl implements Container {
     this.readLock.lock();
     try {
       return BuilderUtils.newContainerStatus(this.containerId,
-        getCurrentState(), diagnostics.toString(), exitCode);
+        getCurrentState(), diagnostics.toString(), exitCode, resource);
     } finally {
       this.readLock.unlock();
     }
@@ -394,6 +394,10 @@ public class ContainerImpl implements Container {
   @Override
   public Resource getResource() {
     return this.resource;
+  }
+  
+  public void setResource(Resource r) {
+	  this.resource = r;
   }
 
   @Override

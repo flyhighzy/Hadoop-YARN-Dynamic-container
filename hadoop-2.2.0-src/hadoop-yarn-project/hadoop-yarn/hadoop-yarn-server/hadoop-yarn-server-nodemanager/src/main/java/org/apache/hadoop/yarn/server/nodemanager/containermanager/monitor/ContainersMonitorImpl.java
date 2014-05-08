@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,11 +33,17 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.util.StringUtils.TraditionalBinaryPrefix;
 import org.apache.hadoop.yarn.api.records.ContainerId;
+import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.event.AsyncDispatcher;
 import org.apache.hadoop.yarn.event.Dispatcher;
 import org.apache.hadoop.yarn.server.nodemanager.ContainerExecutor;
 import org.apache.hadoop.yarn.server.nodemanager.Context;
+import org.apache.hadoop.yarn.server.nodemanager.ContextUpdateEvent;
+import org.apache.hadoop.yarn.server.nodemanager.ContextUpdateEventType;
+import org.apache.hadoop.yarn.server.nodemanager.NodeManager.NMContext;
+import org.apache.hadoop.yarn.server.nodemanager.containermanager.container.Container;
+import org.apache.hadoop.yarn.server.nodemanager.containermanager.container.ContainerImpl;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.container.ContainerKillEvent;
 import org.apache.hadoop.yarn.util.ResourceCalculatorPlugin;
 import org.apache.hadoop.yarn.util.ResourceCalculatorProcessTree;
@@ -532,7 +539,8 @@ public class ContainersMonitorImpl extends AbstractService implements
      * @param curMemUsageOfAgedProcesses, current memory usage.
      * @param pmemLimt, physical memory allocated to the container.
      */
-    private void updateLongRunContainerResource(ContainerId containerId,
+    @SuppressWarnings("unchecked")
+	private void updateLongRunContainerResource(ContainerId containerId,
 			long curMemUsageOfAgedProcesses, long pmemLimit) {
 		BigDecimal b1 = new BigDecimal(Double.toString(curMemUsageOfAgedProcesses));
 		BigDecimal b2 = new BigDecimal(Double.toString(pmemLimit));
@@ -554,11 +562,15 @@ public class ContainersMonitorImpl extends AbstractService implements
 				newPmemLimit = pmemLimit + (memoryTotalAvailable - memoryTotalInUse);
 			}
 			memChanged = true;
+			LOG.info("expand memory of container from "+ pmemLimit/1024/1024 + " to "+ containerId.toString() + 
+					" to " + newPmemLimit/1024/1024 + "MB");
 		}
 		else if(ratio <= getContainerDecreaseRatio()) {
 			//decrease container's memory limit
 			newPmemLimit = (long) (pmemLimit * 0.5);
 			memChanged = true;
+			LOG.info("decrease memory of container from"+ pmemLimit/1024/1024 + " to "+ containerId.toString() + 
+					" to " + newPmemLimit/1024/1024 + "MB");
 		}
 		// update trackingContainers
 		if(memChanged) {
@@ -566,6 +578,16 @@ public class ContainersMonitorImpl extends AbstractService implements
 			ptInfo.setPmemLimit(newPmemLimit);
 			trackingContainers.put(containerId, ptInfo);
 		}
+		//update context and trigger ContextUpdateEvent
+		ConcurrentMap<ContainerId, Container> containers = context.getContainers();
+		Container c = containers.get(containerId);
+		Resource r = c.getResource();
+		r.setMemory((int)newPmemLimit/1024/1024);
+		((ContainerImpl)c).setResource(r);
+		containers.put(containerId, c);
+		((NMContext)context).setContainers(containers);
+		eventDispatcher.getEventHandler().handle(
+                new ContextUpdateEvent(containerId, c, ContextUpdateEventType.CONTAINER_PMEM_UPDATE));
 	}
 
 	private String formatErrorMessage(String memTypeExceeded,

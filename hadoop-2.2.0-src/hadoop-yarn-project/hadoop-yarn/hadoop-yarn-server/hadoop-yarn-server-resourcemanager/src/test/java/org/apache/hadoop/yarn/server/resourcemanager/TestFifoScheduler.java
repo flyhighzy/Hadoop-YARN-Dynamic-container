@@ -163,7 +163,7 @@ public class TestFifoScheduler {
     Container c1 = allocated1.get(0);
     Assert.assertEquals(GB, c1.getResource().getMemory());
     ContainerStatus containerStatus = BuilderUtils.newContainerStatus(
-        c1.getId(), ContainerState.COMPLETE, "", 0);
+        c1.getId(), ContainerState.COMPLETE, "", 0, null);
     nm1.containerStatus(containerStatus);
     int waitCount = 0;
     while (attempt1.getJustFinishedContainers().size() < 1
