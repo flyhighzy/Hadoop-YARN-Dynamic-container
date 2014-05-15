@@ -50,6 +50,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerEven
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerFinishedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerImpl;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerReservedEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerUpdatedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNodeCleanContainerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ActiveUsersManager;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.AppSchedulingInfo;
@@ -239,6 +240,29 @@ public class FSSchedulerApp extends SchedulerApplication {
 
     // remove from preemption map if it is completed
     preemptionMap.remove(rmContainer);
+  }
+  
+  public void containerUpdatedOnNode(ContainerId containerId, Resource resource) {
+		// Inform the container
+		RMContainer rmContainer = getRMContainer(containerId);
+		if (rmContainer == null) {
+			LOG.info("Null container updated...");
+			return;
+		}
+		Resource containerResource = rmContainer.getContainer().getResource();
+		if(containerResource.getMemory() != resource.getMemory() 
+				|| containerResource.getVirtualCores() != resource.getVirtualCores()) {
+			rmContainer.handle(new RMContainerUpdatedEvent(containerId, resource,
+					RMContainerEventType.UPDATED));
+			queue.getMetrics().updateResources(getUser(), 1, containerResource, resource);
+		    synchronized(currentConsumption) {
+		    	Resources.subtractFrom(currentConsumption, containerResource);
+		    	Resources.addTo(currentConsumption, resource);
+		    }
+			
+		    
+		}
+		
   }
 
   synchronized public List<Container> pullNewlyAllocatedContainers() {
@@ -594,4 +618,6 @@ public class FSSchedulerApp extends SchedulerApplication {
   public Set<RMContainer> getPreemptionContainers() {
     return preemptionMap.keySet();
   }
+
+  
 }

@@ -871,6 +871,23 @@ public class FairScheduler implements ResourceScheduler {
 
     application.containerLaunchedOnNode(containerId, node.getNodeID());
   }
+  
+  /**
+   * Process a container whose resource have changed on a node.
+   */
+  private void containerUpdatedOnNode(ContainerId containerId, Resource resource) {
+		// Get the application for the finished container
+		ApplicationAttemptId applicationAttemptId = containerId
+				.getApplicationAttemptId();
+		FSSchedulerApp application = applications.get(applicationAttemptId);
+		if (application == null) {
+			LOG.info("Unknown application: " + applicationAttemptId
+					+ " updated container " + containerId );
+			return;
+		}
+
+		application.containerUpdatedOnNode(containerId, resource);
+  }
 
   /**
    * Process a heartbeat update from a node.
@@ -885,9 +902,11 @@ public class FairScheduler implements ResourceScheduler {
     List<UpdatedContainerInfo> containerInfoList = nm.pullContainerUpdates();
     List<ContainerStatus> newlyLaunchedContainers = new ArrayList<ContainerStatus>();
     List<ContainerStatus> completedContainers = new ArrayList<ContainerStatus>();
+    List<ContainerStatus> updatedContainers = new ArrayList<ContainerStatus>();
     for(UpdatedContainerInfo containerInfo : containerInfoList) {
       newlyLaunchedContainers.addAll(containerInfo.getNewlyLaunchedContainers());
       completedContainers.addAll(containerInfo.getCompletedContainers());
+      updatedContainers.addAll(containerInfo.getUpdatedContainers());
     } 
     // Processing the newly launched containers
     for (ContainerStatus launchedContainer : newlyLaunchedContainers) {
@@ -901,6 +920,13 @@ public class FairScheduler implements ResourceScheduler {
       completedContainer(getRMContainer(containerId),
           completedContainer, RMContainerEventType.FINISHED);
     }
+    
+    // Process updated containers
+    for (ContainerStatus updatedContainer : updatedContainers) {
+    	containerUpdatedOnNode(updatedContainer.getContainerId(), 
+    			updatedContainer.getContainerResource());
+    }
+      
 
     // Assign new containers...
     // 1. Check for reserved applications

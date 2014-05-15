@@ -357,6 +357,28 @@ public class QueueMetrics implements MetricsSource {
       parent.releaseResources(user, containers, res);
     }
   }
+  
+  public void updateResources(String user, int containers, Resource oldRes, Resource newRes) {
+	//TODO
+	  synchronized(allocatedMB) {
+		  allocatedMB.incr(newRes.getMemory() * containers);
+		  allocatedMB.decr(oldRes.getMemory() * containers);
+	  }
+	  synchronized(allocatedVCores) {
+		  allocatedVCores.incr(newRes.getVirtualCores() * containers);
+		  allocatedVCores.decr(oldRes.getVirtualCores() * containers);
+	  }
+	
+	_incrPendingResources(containers, Resources.multiply(oldRes, containers));
+	_decrPendingResources(containers, Resources.multiply(newRes, containers));
+	QueueMetrics userMetrics = getUserMetrics(user);
+	if (userMetrics != null) {
+		userMetrics.updateResources(user, containers, oldRes, newRes);
+	}
+	if (parent != null) {
+		parent.updateResources(user, containers, oldRes, newRes);
+	}
+  }
 
   public void reserveResource(String user, Resource res) {
     reservedContainers.incr();

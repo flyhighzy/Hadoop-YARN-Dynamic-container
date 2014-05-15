@@ -574,6 +574,8 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
           new ArrayList<ContainerStatus>();
       List<ContainerStatus> completedContainers = 
           new ArrayList<ContainerStatus>();
+      List<ContainerStatus> updatedContainers = 
+    	  new ArrayList<ContainerStatus>();
       for (ContainerStatus remoteContainer : statusEvent.getContainers()) {
         ContainerId containerId = remoteContainer.getContainerId();
         
@@ -600,7 +602,10 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
             rmNode.justLaunchedContainers.put(containerId, remoteContainer);
             newlyLaunchedContainers.add(remoteContainer);
           }
-          //TODO: else, long running containers with resource update.
+          else {
+        	  //TODO: else, long running containers with resource update.
+        	  updatedContainers.add(remoteContainer);
+          }
         } else {
           // A finished container
           rmNode.justLaunchedContainers.remove(containerId);
@@ -608,9 +613,10 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
         }
       }
       if(newlyLaunchedContainers.size() != 0 
-          || completedContainers.size() != 0) {
+          || completedContainers.size() != 0
+    	  || updatedContainers.size() != 0) {
         rmNode.nodeUpdateQueue.add(new UpdatedContainerInfo
-            (newlyLaunchedContainers, completedContainers));
+            (newlyLaunchedContainers, completedContainers, updatedContainers));
       }
       if(rmNode.nextHeartBeat) {
         rmNode.nextHeartBeat = false;

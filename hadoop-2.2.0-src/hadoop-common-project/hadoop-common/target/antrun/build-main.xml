@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="maven-antrun-" default="main"  >
 <target name="main">
-  <mkdir dir="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-common-project/hadoop-common/target/test-dir"/>
-  <mkdir dir="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-common-project/hadoop-common/target/test/data"/>
+  <copy toDir="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-common-project/hadoop-common/target/test-classes">
+    <fileset dir="/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-common-project/hadoop-common/src/test/java/org/apache/hadoop/fs">
+      <include name="test-untar.tar"/>
+      <include name="test-untar.tgz"/>
+    </fileset>
+  </copy>
 </target>
 </project>

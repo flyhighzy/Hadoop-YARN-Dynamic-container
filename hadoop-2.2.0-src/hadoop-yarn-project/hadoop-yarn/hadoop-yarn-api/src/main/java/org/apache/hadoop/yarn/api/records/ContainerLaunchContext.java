@@ -71,6 +71,7 @@ public abstract class ContainerLaunchContext {
     container.setServiceData(serviceData);
     container.setTokens(tokens);
     container.setApplicationACLs(acls);
+    container.setLongRunMark(true);
     return container;
   }
   

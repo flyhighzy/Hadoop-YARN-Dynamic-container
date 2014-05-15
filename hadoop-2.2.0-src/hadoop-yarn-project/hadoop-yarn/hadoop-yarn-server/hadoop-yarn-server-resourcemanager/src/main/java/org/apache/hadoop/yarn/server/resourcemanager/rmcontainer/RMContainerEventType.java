@@ -28,6 +28,7 @@ public enum RMContainerEventType {
 
   LAUNCHED,
   FINISHED,
+  UPDATED,
 
   // Source: ApplicationMasterService->Scheduler
   RELEASED,

@@ -53,6 +53,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerEven
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerFinishedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerImpl;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerReservedEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerUpdatedEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNodeCleanContainerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ActiveUsersManager;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.Allocation;
@@ -266,6 +267,31 @@ public class FiCaSchedulerApp extends SchedulerApplication {
     return true;
   }
 
+	public void containerUpdatedOnNode(ContainerId containerId,
+			Resource resource) {
+		// Inform the container
+		RMContainer rmContainer = getRMContainer(containerId);
+		if (rmContainer == null) {
+			LOG.info("Null container updated...");
+			return;
+		}
+		Resource containerResource = rmContainer.getContainer().getResource();
+		if (containerResource.getMemory() != resource.getMemory()
+				|| containerResource.getVirtualCores() != resource
+						.getVirtualCores()) {
+			rmContainer.handle(new RMContainerUpdatedEvent(containerId,
+					resource, RMContainerEventType.UPDATED));
+			queue.getMetrics().updateResources(getUser(), 1, containerResource,
+					resource);
+			synchronized (currentConsumption) {
+				Resources.subtractFrom(currentConsumption, containerResource);
+				Resources.addTo(currentConsumption, resource);
+			}
+
+		}
+
+	}
+  
   synchronized public RMContainer allocate(NodeType type, FiCaSchedulerNode node,
       Priority priority, ResourceRequest request, 
       Container container) {
@@ -582,4 +608,5 @@ public class FiCaSchedulerApp extends SchedulerApplication {
                           Collections.singletonList(rr));
   }
 
+	
 }

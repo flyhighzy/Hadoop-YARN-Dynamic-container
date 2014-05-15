@@ -586,6 +586,8 @@ public class ContainersMonitorImpl extends AbstractService implements
 		((ContainerImpl)c).setResource(r);
 		containers.put(containerId, c);
 		((NMContext)context).setContainers(containers);
+		LOG.info("Container " + containerId.toString() + "resource changed to" + 
+					c.getResource().toString());
 		eventDispatcher.getEventHandler().handle(
                 new ContextUpdateEvent(containerId, c, ContextUpdateEventType.CONTAINER_PMEM_UPDATE));
 	}

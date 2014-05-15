@@ -295,6 +295,9 @@ public class NodeStatusUpdaterImpl extends AbstractService implements
     return appList;
   }
 
+  /**
+   * get container status from updated context, including updated Resource.
+   */
   @Override
   public NodeStatus getNodeStatusAndUpdateContainersInContext() {
 
