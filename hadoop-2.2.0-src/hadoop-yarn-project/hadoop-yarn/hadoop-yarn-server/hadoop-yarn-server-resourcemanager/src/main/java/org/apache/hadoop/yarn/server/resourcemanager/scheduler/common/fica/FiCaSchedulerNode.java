@@ -167,9 +167,17 @@ public class FiCaSchedulerNode extends SchedulerNode {
         getUsedResource() + " used and " + getAvailableResource()
         + " available" + ", release resources=" + true);
   }
+  
+  public synchronized void updateContainer(ContainerId containerId, Resource oldRes,
+		  Resource newRes) {
+	  addAvailableResource(oldRes);
+	  deductAvailableResource(newRes);
+	  LOG.info("container " + containerId + " updated resource from "
+			      + oldRes + " to " + newRes);
+  }
 
 
-  private synchronized void addAvailableResource(Resource resource) {
+  public synchronized void addAvailableResource(Resource resource) {
     if (resource == null) {
       LOG.error("Invalid resource addition of null resource for "
           + rmNode.getNodeAddress());
@@ -179,7 +187,7 @@ public class FiCaSchedulerNode extends SchedulerNode {
     Resources.subtractFrom(usedResource, resource);
   }
 
-  private synchronized void deductAvailableResource(Resource resource) {
+  public synchronized void deductAvailableResource(Resource resource) {
     if (resource == null) {
       LOG.error("Invalid deduction of null resource for "
           + rmNode.getNodeAddress());

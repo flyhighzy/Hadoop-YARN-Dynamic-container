@@ -100,6 +100,8 @@ public class RMContainerImpl implements RMContainer {
         RMContainerEventType.RELEASED, new KillTransition())
     .addTransition(RMContainerState.RUNNING, RMContainerState.RUNNING,
         RMContainerEventType.EXPIRE)
+    .addTransition(RMContainerState.RUNNING, RMContainerState.RUNNING, 
+		RMContainerEventType.UPDATED, new UpdateTransition())
 
     // Transitions from COMPLETED state
     .addTransition(RMContainerState.COMPLETED, RMContainerState.COMPLETED,
@@ -270,6 +272,16 @@ public class RMContainerImpl implements RMContainer {
       container.eventHandler.handle(new RMAppAttemptContainerAcquiredEvent(
           container.getApplicationAttemptId(), container.getContainer()));
     }
+  }
+  
+  private static final class UpdateTransition extends BaseTransition {
+	  
+	  @Override
+	  public void transition(RMContainerImpl container, RMContainerEvent event) {
+		  RMContainerUpdatedEvent updateEvent = (RMContainerUpdatedEvent)event;
+		  Resource newResource = updateEvent.getResource();
+		  container.getContainer().setResource(newResource);
+	  }
   }
 
   private static final class LaunchedTransition extends BaseTransition {

@@ -56,7 +56,7 @@ extends ContainerLaunchContext {
   private Map<String, String> environment = null;
   private List<String> commands = null;
   private Map<ApplicationAccessType, String> applicationACLS = null;
-  private Boolean longRunMark = null;
+  private Boolean longRunMark = true;
   
   public ContainerLaunchContextPBImpl() {
     builder = ContainerLaunchContextProto.newBuilder();

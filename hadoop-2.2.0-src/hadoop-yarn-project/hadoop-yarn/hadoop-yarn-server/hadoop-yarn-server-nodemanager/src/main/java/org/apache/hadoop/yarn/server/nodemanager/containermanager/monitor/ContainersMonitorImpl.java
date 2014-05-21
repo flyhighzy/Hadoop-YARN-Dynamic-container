@@ -507,8 +507,10 @@ public class ContainersMonitorImpl extends AbstractService implements
             }
             
             //adjust long-run container's memory limit.
-            if(ptInfo.getLongRunMark()) {
-            	updateLongRunContainerResource(containerId, curMemUsageOfAgedProcesses, pmemLimit);
+            if(isContainerElasticEnabled() && ptInfo.getLongRunMark()) {
+            	updateLongRunContainerResource(containerId, currentPmemUsage, pmemLimit);
+            	// just for test bug
+//            	updateLongRunContainerResource(containerId, curMemUsageOfAgedProcesses, pmemLimit);
             }
           } catch (Exception e) {
             // Log the exception and proceed to the next container.
@@ -554,9 +556,9 @@ public class ContainersMonitorImpl extends AbstractService implements
 			long memoryTotalInUse = getTotalMemoryInUse();
 			// total memory configured for containers
 			long memoryTotalAvailable = getPmemAllocatedForContainers();
-			if(memoryTotalAvailable - memoryTotalInUse >= (long) pmemLimit * 0.2) {
+			if(memoryTotalAvailable - memoryTotalInUse >= (long) pmemLimit * 0.5) {
 				//node have enough memory to expand
-				newPmemLimit = (long) (pmemLimit * 1.2);
+				newPmemLimit = (long) (pmemLimit * 1.5);
 			}
 			else {
 				newPmemLimit = pmemLimit + (memoryTotalAvailable - memoryTotalInUse);
@@ -567,7 +569,7 @@ public class ContainersMonitorImpl extends AbstractService implements
 		}
 		else if(ratio <= getContainerDecreaseRatio()) {
 			//decrease container's memory limit
-			newPmemLimit = (long) (pmemLimit * 0.5);
+			newPmemLimit = (long) (pmemLimit * 0.7);
 			memChanged = true;
 			LOG.info("decrease memory of container from"+ pmemLimit/1024/1024 + " to "+ containerId.toString() + 
 					" to " + newPmemLimit/1024/1024 + "MB");
@@ -577,20 +579,23 @@ public class ContainersMonitorImpl extends AbstractService implements
 			ProcessTreeInfo ptInfo = trackingContainers.get(containerId);
 			ptInfo.setPmemLimit(newPmemLimit);
 			trackingContainers.put(containerId, ptInfo);
+		
+			//update context and trigger ContextUpdateEvent
+			ConcurrentMap<ContainerId, Container> containers = context.getContainers();
+			Container c = containers.get(containerId);
+			Resource r = c.getResource();
+			Long newPmem = newPmemLimit/1024/1024;
+			r.setMemory(newPmem.intValue());
+			((ContainerImpl)c).setResource(r);
+			containers.put(containerId, c);
+			((NMContext)context).setContainers(containers);
+			LOG.info("Container " + containerId.toString() + "resource changed to" + 
+						c.getResource().toString());
+			eventDispatcher.getEventHandler().handle(
+	                new ContextUpdateEvent(containerId, c, ContextUpdateEventType.CONTAINER_PMEM_UPDATE));
+	
 		}
-		//update context and trigger ContextUpdateEvent
-		ConcurrentMap<ContainerId, Container> containers = context.getContainers();
-		Container c = containers.get(containerId);
-		Resource r = c.getResource();
-		r.setMemory((int)newPmemLimit/1024/1024);
-		((ContainerImpl)c).setResource(r);
-		containers.put(containerId, c);
-		((NMContext)context).setContainers(containers);
-		LOG.info("Container " + containerId.toString() + "resource changed to" + 
-					c.getResource().toString());
-		eventDispatcher.getEventHandler().handle(
-                new ContextUpdateEvent(containerId, c, ContextUpdateEventType.CONTAINER_PMEM_UPDATE));
-	}
+    }
 
 	private String formatErrorMessage(String memTypeExceeded,
         long currentVmemUsage, long vmemLimit,

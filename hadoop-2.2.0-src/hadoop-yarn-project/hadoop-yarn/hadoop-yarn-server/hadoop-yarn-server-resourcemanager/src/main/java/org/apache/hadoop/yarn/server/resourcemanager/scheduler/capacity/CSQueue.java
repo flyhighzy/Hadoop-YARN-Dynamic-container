@@ -26,6 +26,7 @@ import org.apache.hadoop.classification.InterfaceStability.Stable;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.Container;
+import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.ContainerStatus;
 import org.apache.hadoop.yarn.api.records.QueueACL;
 import org.apache.hadoop.yarn.api.records.QueueState;
@@ -191,6 +192,22 @@ extends org.apache.hadoop.yarn.server.resourcemanager.scheduler.Queue {
   public void completedContainer(Resource clusterResource,
       FiCaSchedulerApp application, FiCaSchedulerNode node, 
       RMContainer container, ContainerStatus containerStatus, 
+      RMContainerEventType event, CSQueue childQueue);
+  
+  /**
+   * A container assigned to the queue has been updated with resource.
+   * @param clusterResource the resource of the cluster
+   * @param application application to which the container was assigned
+   * @param node node on which the container completed
+   * @param container updated container, 
+   * @param containerStatus <code>ContainerStatus</code> for the updated 
+   *                        container
+   * @param childQueue <code>CSQueue</code> to reinsert in childQueues 
+   * @param event event to be sent to the container
+   */
+  public void updatedContainer(Resource clusterResource,
+      FiCaSchedulerApp application, FiCaSchedulerNode node, 
+      ContainerId containerId, Resource oldRes, Resource newRes, 
       RMContainerEventType event, CSQueue childQueue);
 
   /**

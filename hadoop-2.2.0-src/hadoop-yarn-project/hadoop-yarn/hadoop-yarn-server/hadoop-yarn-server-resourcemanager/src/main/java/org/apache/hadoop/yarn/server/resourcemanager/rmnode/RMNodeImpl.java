@@ -603,7 +603,7 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
             newlyLaunchedContainers.add(remoteContainer);
           }
           else {
-        	  //TODO: else, long running containers with resource update.
+        	  //else, long running containers with resource update.
         	  updatedContainers.add(remoteContainer);
           }
         } else {

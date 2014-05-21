@@ -61,6 +61,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.AppSchedulingInfo
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.NodeType;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.Queue;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerApplication;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.LeafQueue;
 import org.apache.hadoop.yarn.util.resource.Resources;
 import org.apache.hadoop.yarn.util.resource.ResourceCalculator;
 
@@ -267,28 +268,29 @@ public class FiCaSchedulerApp extends SchedulerApplication {
     return true;
   }
 
-	public void containerUpdatedOnNode(ContainerId containerId,
-			Resource resource) {
+  synchronized public boolean containerUpdated(ContainerId containerId,
+			Resource resource, RMContainerEventType event) {
 		// Inform the container
 		RMContainer rmContainer = getRMContainer(containerId);
 		if (rmContainer == null) {
 			LOG.info("Null container updated...");
-			return;
+			return false;
 		}
 		Resource containerResource = rmContainer.getContainer().getResource();
 		if (containerResource.getMemory() != resource.getMemory()
 				|| containerResource.getVirtualCores() != resource
 						.getVirtualCores()) {
 			rmContainer.handle(new RMContainerUpdatedEvent(containerId,
-					resource, RMContainerEventType.UPDATED));
+					resource, event));
+			
 			queue.getMetrics().updateResources(getUser(), 1, containerResource,
 					resource);
-			synchronized (currentConsumption) {
-				Resources.subtractFrom(currentConsumption, containerResource);
-				Resources.addTo(currentConsumption, resource);
-			}
+			Resources.addTo(currentConsumption, resource);
+			Resources.subtractFrom(currentConsumption, containerResource);
+			return true;
 
 		}
+		return false;
 
 	}
   

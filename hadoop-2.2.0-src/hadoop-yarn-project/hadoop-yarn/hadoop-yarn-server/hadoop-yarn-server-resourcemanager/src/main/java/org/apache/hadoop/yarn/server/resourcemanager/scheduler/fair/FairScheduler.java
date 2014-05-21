@@ -875,7 +875,22 @@ public class FairScheduler implements ResourceScheduler {
   /**
    * Process a container whose resource have changed on a node.
    */
-  private void containerUpdatedOnNode(ContainerId containerId, Resource resource) {
+  private void containerUpdatedOnNode(ContainerId containerId, FSSchedulerNode node, 
+		  Resource resource) {
+	    RMContainer rmContainer = getRMContainer(containerId);
+		if (rmContainer == null) {
+			LOG.info("Null container updated...");
+			return;
+		}
+		Resource containerResource = rmContainer.getContainer().getResource();
+		if (containerResource.getMemory() != resource.getMemory()
+				|| containerResource.getVirtualCores() != resource
+						.getVirtualCores()) {
+			node.addAvailableResource(containerResource);
+			node.deductAvailableResource(resource);
+		}
+	  
+	  
 		// Get the application for the finished container
 		ApplicationAttemptId applicationAttemptId = containerId
 				.getApplicationAttemptId();
@@ -923,7 +938,7 @@ public class FairScheduler implements ResourceScheduler {
     
     // Process updated containers
     for (ContainerStatus updatedContainer : updatedContainers) {
-    	containerUpdatedOnNode(updatedContainer.getContainerId(), 
+    	containerUpdatedOnNode(updatedContainer.getContainerId(), node, 
     			updatedContainer.getContainerResource());
     }
       

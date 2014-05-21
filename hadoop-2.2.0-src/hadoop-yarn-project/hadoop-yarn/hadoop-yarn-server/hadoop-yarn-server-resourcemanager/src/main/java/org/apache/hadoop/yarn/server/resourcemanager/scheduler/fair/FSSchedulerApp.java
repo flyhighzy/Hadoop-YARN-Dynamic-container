@@ -242,7 +242,7 @@ public class FSSchedulerApp extends SchedulerApplication {
     preemptionMap.remove(rmContainer);
   }
   
-  public void containerUpdatedOnNode(ContainerId containerId, Resource resource) {
+  synchronized public void containerUpdatedOnNode(ContainerId containerId, Resource resource) {
 		// Inform the container
 		RMContainer rmContainer = getRMContainer(containerId);
 		if (rmContainer == null) {
@@ -255,11 +255,9 @@ public class FSSchedulerApp extends SchedulerApplication {
 			rmContainer.handle(new RMContainerUpdatedEvent(containerId, resource,
 					RMContainerEventType.UPDATED));
 			queue.getMetrics().updateResources(getUser(), 1, containerResource, resource);
-		    synchronized(currentConsumption) {
-		    	Resources.subtractFrom(currentConsumption, containerResource);
-		    	Resources.addTo(currentConsumption, resource);
-		    }
-			
+
+	    	Resources.subtractFrom(currentConsumption, containerResource);
+	    	Resources.addTo(currentConsumption, resource);
 		    
 		}
 		

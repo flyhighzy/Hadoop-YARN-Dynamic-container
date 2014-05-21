@@ -75,7 +75,7 @@ public class NodeManager extends CompositeService
   private Context context;
   private AsyncDispatcher dispatcher;
   private ContainerManagerImpl containerManager;
-  private NodeStatusUpdaterImpl nodeStatusUpdater;
+  private NodeStatusUpdater nodeStatusUpdater;
   private static CompositeServiceShutdownHook nodeManagerShutdownHook; 
   
   private AtomicBoolean isStopping = new AtomicBoolean(false);
@@ -159,7 +159,7 @@ public class NodeManager extends CompositeService
 
 
     nodeStatusUpdater =
-        (NodeStatusUpdaterImpl) createNodeStatusUpdater(context, dispatcher, nodeHealthChecker);
+        createNodeStatusUpdater(context, dispatcher, nodeHealthChecker);
 
     NodeResourceMonitor nodeResourceMonitor = createNodeResourceMonitor();
     addService(nodeResourceMonitor);
@@ -175,7 +175,6 @@ public class NodeManager extends CompositeService
     addService(webServer);
     ((NMContext) context).setWebServer(webServer);
 
-    dispatcher.register(ContextUpdateEventType.class, nodeStatusUpdater);
     dispatcher.register(ContainerManagerEventType.class, containerManager);
     dispatcher.register(NodeManagerEventType.class, this);
     addService(dispatcher);

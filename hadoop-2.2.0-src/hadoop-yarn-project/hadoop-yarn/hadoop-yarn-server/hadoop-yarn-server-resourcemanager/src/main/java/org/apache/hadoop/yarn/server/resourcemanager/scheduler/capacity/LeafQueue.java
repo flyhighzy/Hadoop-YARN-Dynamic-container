@@ -1465,6 +1465,50 @@ public class LeafQueue implements CSQueue {
 
     }
   }
+  
+  @Override
+  public void updatedContainer(Resource clusterResource, 
+	      FiCaSchedulerApp application, FiCaSchedulerNode node, 
+	      ContainerId containerId, Resource oldRes, Resource newRes, 
+	      RMContainerEventType event, CSQueue childQueue) {
+	    if (application != null) {
+	      // Careful! Locking order is important!
+	      synchronized (this) {
+
+	        boolean updated = false;
+	        // Inform the application & the node
+	        // Note: It's safe to assume that all state changes to RMContainer
+	        // happen under scheduler's lock... 
+	        // So, this is, in effect, a transaction across application & node
+	        
+            updated =
+                application.containerUpdated(containerId, 
+                		newRes, event);
+            node.updateContainer(containerId, oldRes, newRes);
+	        
+
+	        // Book-keeping
+	        if (updated) {
+	          updateResource(clusterResource, application, 
+	        		  oldRes, newRes);
+	          LOG.info("updatedContainer" +
+	              " container=" + containerId +
+	              " oldresource=" + oldRes +
+	              " newresource=" + newRes +
+	              " queue=" + this +
+	              " usedCapacity=" + getUsedCapacity() +
+	              " absoluteUsedCapacity=" + getAbsoluteUsedCapacity() +
+	              " used=" + usedResources +
+	              " cluster=" + clusterResource);
+	          // Inform the parent queue
+	          getParent().updatedContainer(clusterResource, application,
+	              node, containerId, oldRes, newRes, event, this);
+	        }
+	      }
+
+
+	    }
+	  }
 
   synchronized void allocateResource(Resource clusterResource, 
       FiCaSchedulerApp application, Resource resource) {
@@ -1510,6 +1554,26 @@ public class LeafQueue implements CSQueue {
         " used=" + usedResources + " numContainers=" + numContainers + 
         " user=" + userName + " user-resources=" + user.getConsumedResources());
   }
+  
+  synchronized void updateResource(Resource clusterResource, 
+	      FiCaSchedulerApp application, Resource oldRes, Resource newRes) {
+	    // Update queue metrics
+	    Resources.addTo(usedResources, newRes);
+	    Resources.subtractFrom(usedResources, oldRes);
+	    CSQueueUtils.updateQueueStatistics(
+	        resourceCalculator, this, getParent(), clusterResource, 
+	        minimumAllocation);
+
+	    // Update user metrics
+	    String userName = application.getUser();
+	    User user = getUser(userName);
+	    user.updateContainer(oldRes, newRes);
+	    metrics.setAvailableResourcesToUser(userName, application.getHeadroom());
+	      
+	    LOG.info(getQueueName() + 
+	        " used=" + usedResources + " numContainers=" + numContainers + 
+	        " user=" + userName + " user-resources=" + user.getConsumedResources());
+	  }
 
   @Override
   public synchronized void updateClusterResource(Resource clusterResource) {
@@ -1596,6 +1660,10 @@ public class LeafQueue implements CSQueue {
 
     public synchronized void releaseContainer(Resource resource) {
       Resources.subtractFrom(consumed, resource);
+    }
+    public synchronized void updateContainer(Resource oldRes, Resource newRes) {
+    	Resources.addTo(consumed, newRes);
+    	Resources.subtractFrom(consumed, oldRes);
     }
   }
 

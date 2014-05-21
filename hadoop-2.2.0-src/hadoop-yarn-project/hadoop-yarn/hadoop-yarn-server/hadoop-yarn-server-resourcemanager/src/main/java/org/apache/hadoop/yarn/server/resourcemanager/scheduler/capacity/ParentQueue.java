@@ -37,6 +37,7 @@ import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.yarn.api.records.Container;
+import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.ContainerStatus;
 import org.apache.hadoop.yarn.api.records.QueueACL;
 import org.apache.hadoop.yarn.api.records.QueueInfo;
@@ -724,6 +725,35 @@ public class ParentQueue implements CSQueue {
     }
   }
   
+  @Override
+  public void updatedContainer(Resource clusterResource,
+  		FiCaSchedulerApp application, FiCaSchedulerNode node,
+  		ContainerId containerId, Resource oldRes, Resource newRes,
+  		RMContainerEventType event, CSQueue childQueue) {
+	  if (application != null) {
+	      // Careful! Locking order is important!
+	      // Book keeping
+	      synchronized (this) {
+	    	  
+	    	  updateResource(clusterResource, oldRes, newRes);
+
+	        LOG.info("updatedContainer" +
+	            " queue=" + getQueueName() + 
+	            " usedCapacity=" + getUsedCapacity() +
+	            " absoluteUsedCapacity=" + getAbsoluteUsedCapacity() +
+	            " used=" + usedResources + 
+	            " cluster=" + clusterResource);
+	      }
+	      
+	      // Inform the parent
+	      if (parent != null) {
+	        // complete my parent
+	        parent.updatedContainer(clusterResource, application, 
+	            node, containerId, oldRes, newRes, event, this);
+	      }    
+	    }
+  }
+  
   synchronized void allocateResource(Resource clusterResource, 
       Resource resource) {
     Resources.addTo(usedResources, resource);
@@ -739,6 +769,14 @@ public class ParentQueue implements CSQueue {
         resourceCalculator, this, parent, clusterResource, minimumAllocation);
     --numContainers;
   }
+  
+  synchronized void updateResource(Resource clusterResource, 
+	      Resource oldRes, Resource newRes) {
+	  Resources.addTo(usedResources, newRes);
+	  Resources.subtractFrom(usedResources, oldRes);
+	  CSQueueUtils.updateQueueStatistics(
+	        resourceCalculator, this, parent, clusterResource, minimumAllocation);
+	  }
 
   @Override
   public synchronized void updateClusterResource(Resource clusterResource) {
@@ -769,4 +807,6 @@ public class ParentQueue implements CSQueue {
       parent.recoverContainer(clusterResource, application, container);
     }
   }
+
+
 }

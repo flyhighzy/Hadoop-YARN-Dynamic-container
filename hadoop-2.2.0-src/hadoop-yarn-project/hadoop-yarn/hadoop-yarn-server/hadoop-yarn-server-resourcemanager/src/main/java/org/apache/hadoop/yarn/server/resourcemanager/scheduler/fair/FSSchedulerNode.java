@@ -167,7 +167,7 @@ public class FSSchedulerNode extends SchedulerNode {
   }
 
 
-  private synchronized void addAvailableResource(Resource resource) {
+  public synchronized void addAvailableResource(Resource resource) {
     if (resource == null) {
       LOG.error("Invalid resource addition of null resource for "
           + rmNode.getNodeAddress());
@@ -182,7 +182,7 @@ public class FSSchedulerNode extends SchedulerNode {
     return this.totalResourceCapability;
   }
 
-  private synchronized void deductAvailableResource(Resource resource) {
+  public synchronized void deductAvailableResource(Resource resource) {
     if (resource == null) {
       LOG.error("Invalid deduction of null resource for "
           + rmNode.getNodeAddress());

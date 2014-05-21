@@ -654,8 +654,12 @@ public class CapacityScheduler
     
  // Process updated containers
     for (ContainerStatus updatedContainer : updatedContainers) {
-    	containerUpdatedOnNode(updatedContainer.getContainerId(), 
-    			updatedContainer.getContainerResource());
+    	ContainerId containerId = updatedContainer.getContainerId();
+    	updatedContainer(getRMContainer(containerId), 
+    			updatedContainer, RMContainerEventType.UPDATED);
+//    	containerUpdatedOnNode(updatedContainer.getContainerId(), node,
+//    			updatedContainer.getContainerResource());
+    	
     }
 
     // Now node data structures are upto date and ready for scheduling.
@@ -706,22 +710,6 @@ public class CapacityScheduler
 
   }
 
-  /**
-   * Process a container whose resource have changed on a node.
-   */
-  private void containerUpdatedOnNode(ContainerId containerId, Resource resource) {
-		// Get the application for the finished container
-		ApplicationAttemptId applicationAttemptId = containerId
-				.getApplicationAttemptId();
-		FiCaSchedulerApp application = getApplication(applicationAttemptId);
-		if (application == null) {
-			LOG.info("Unknown application: " + applicationAttemptId
-					+ " updated container " + containerId );
-			return;
-		}
-
-		application.containerUpdatedOnNode(containerId, resource);
-  }
 
 private void containerLaunchedOnNode(ContainerId containerId, FiCaSchedulerNode node) {
     // Get the application for the finished container
@@ -869,6 +857,40 @@ private void containerLaunchedOnNode(ContainerId containerId, FiCaSchedulerNode 
         " on node: " + node + 
         " with event: " + event);
   }
+  
+  private synchronized void updatedContainer(RMContainer rmContainer,
+	      ContainerStatus containerStatus, RMContainerEventType event) {
+	    if (rmContainer == null) {
+	      LOG.info("Null container updated...");
+	      return;
+	    }
+	    
+	    Container container = rmContainer.getContainer();
+	    
+	    // Get the application for the finished container
+	    ApplicationAttemptId applicationAttemptId =
+	      container.getId().getApplicationAttemptId();
+	    FiCaSchedulerApp application = getApplication(applicationAttemptId);
+	    if (application == null) {
+	      LOG.info("Container " + container + " of" +
+	      		" unknown application " + applicationAttemptId + 
+	          " updated with resource " + containerStatus.getContainerResource());
+	      return;
+	    }
+	    
+	    // Get the node on which the container was allocated
+	    FiCaSchedulerNode node = getNode(container.getNodeId());
+	    
+	    // Inform the queue
+	    LeafQueue queue = (LeafQueue)application.getQueue();
+	    queue.updatedContainer(clusterResource, application, node, 
+	        rmContainer.getContainerId(), container.getResource(),
+	        containerStatus.getContainerResource(), event, null);
+
+	    LOG.info("container " + container.getId() +
+	        " on node: " + node + 
+	        " updated with resource: " + containerStatus.getContainerResource());
+	  }
 
   @Lock(Lock.NoLock.class)
   FiCaSchedulerApp getApplication(ApplicationAttemptId applicationAttemptId) {

@@ -84,12 +84,14 @@ import org.apache.hadoop.yarn.server.nodemanager.CMgrCompletedContainersEvent;
 import org.apache.hadoop.yarn.server.nodemanager.ContainerExecutor;
 import org.apache.hadoop.yarn.server.nodemanager.ContainerManagerEvent;
 import org.apache.hadoop.yarn.server.nodemanager.Context;
+import org.apache.hadoop.yarn.server.nodemanager.ContextUpdateEventType;
 import org.apache.hadoop.yarn.server.nodemanager.DeletionService;
 import org.apache.hadoop.yarn.server.nodemanager.LocalDirsHandlerService;
 import org.apache.hadoop.yarn.server.nodemanager.NMAuditLogger;
 import org.apache.hadoop.yarn.server.nodemanager.NMAuditLogger.AuditConstants;
 import org.apache.hadoop.yarn.server.nodemanager.NodeManager;
 import org.apache.hadoop.yarn.server.nodemanager.NodeStatusUpdater;
+import org.apache.hadoop.yarn.server.nodemanager.NodeStatusUpdaterImpl;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.application.Application;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.application.ApplicationContainerInitEvent;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.application.ApplicationEvent;
@@ -139,7 +141,7 @@ public class ContainerManagerImpl extends CompositeService implements
   private final AuxServices auxiliaryServices;
   private final NodeManagerMetrics metrics;
 
-  private final NodeStatusUpdater nodeStatusUpdater;
+  private final NodeStatusUpdaterImpl nodeStatusUpdater;
 
   protected LocalDirsHandlerService dirsHandler;
   protected final AsyncDispatcher dispatcher;
@@ -173,7 +175,7 @@ public class ContainerManagerImpl extends CompositeService implements
     containersLauncher = createContainersLauncher(context, exec);
     addService(containersLauncher);
 
-    this.nodeStatusUpdater = nodeStatusUpdater;
+    this.nodeStatusUpdater = (NodeStatusUpdaterImpl) nodeStatusUpdater;
     this.aclsManager = aclsManager;
 
     // Start configurable services
@@ -185,6 +187,7 @@ public class ContainerManagerImpl extends CompositeService implements
         new ContainersMonitorImpl(exec, dispatcher, this.context);
     addService(this.containersMonitor);
 
+    dispatcher.register(ContextUpdateEventType.class, this.nodeStatusUpdater);
     dispatcher.register(ContainerEventType.class,
         new ContainerEventDispatcher());
     dispatcher.register(ApplicationEventType.class,
