@@ -220,6 +220,11 @@ public class ContainersMonitorImpl extends AbstractService implements
     private ResourceCalculatorProcessTree pTree;
     private long vmemLimit;
     private long pmemLimit;
+    /*
+     * pmemUpperLimit records the original memory limit value.
+     * As pmemLimit will change during time if elastic container enabled. 
+     */
+    private long pmemUpperLimit;
     private boolean longRunMark;
 
     public ProcessTreeInfo(ContainerId containerId, String pid,
@@ -230,6 +235,7 @@ public class ContainersMonitorImpl extends AbstractService implements
       this.pTree = pTree;
       this.vmemLimit = vmemLimit;
       this.pmemLimit = pmemLimit;
+      this.pmemUpperLimit = pmemLimit;
       this.longRunMark = longRunMark;
     }
 
@@ -271,6 +277,14 @@ public class ContainersMonitorImpl extends AbstractService implements
     public boolean getLongRunMark() {
     	return this.longRunMark;
     }
+
+	public long getPmemUpperLimit() {
+		return pmemUpperLimit;
+	}
+
+	public void setPmemUpperLimit(long pmemUpperLimit) {
+		this.pmemUpperLimit = pmemUpperLimit;
+	}
   }
 
   /**
@@ -436,19 +450,34 @@ public class ContainersMonitorImpl extends AbstractService implements
             if (pId == null) {
               continue; // processTree cannot be tracked
             }
+            
+            
+            ResourceCalculatorProcessTree pTree = ptInfo.getProcessTree();
+            pTree.updateProcessTree();    // update process-tree
+            long currentPmemUsage = pTree.getCumulativeRssmem();
+            long pmemLimit = ptInfo.getPmemLimit();
+            long pmemUpperLimit = ptInfo.getPmemUpperLimit();
+            
+            //adjust long-run container's memory limit.
+            if(isContainerElasticEnabled() && ptInfo.getLongRunMark()) {
+            	updateLongRunContainerResource(containerId, currentPmemUsage,
+            			pmemLimit, pmemUpperLimit);
+            	
+            }
 
             LOG.debug("Constructing ProcessTree for : PID = " + pId
                 + " ContainerId = " + containerId);
-            ResourceCalculatorProcessTree pTree = ptInfo.getProcessTree();
+//            ResourceCalculatorProcessTree pTree = ptInfo.getProcessTree();
             pTree.updateProcessTree();    // update process-tree
             long currentVmemUsage = pTree.getCumulativeVmem();
-            long currentPmemUsage = pTree.getCumulativeRssmem();
+            currentPmemUsage = pTree.getCumulativeRssmem();
             // as processes begin with an age 1, we want to see if there
             // are processes more than 1 iteration old.
             long curMemUsageOfAgedProcesses = pTree.getCumulativeVmem(1);
             long curRssMemUsageOfAgedProcesses = pTree.getCumulativeRssmem(1);
             long vmemLimit = ptInfo.getVmemLimit();
-            long pmemLimit = ptInfo.getPmemLimit();
+            pmemLimit = ptInfo.getPmemLimit();
+            pmemUpperLimit = ptInfo.getPmemUpperLimit();
             LOG.info(String.format(
                 "Memory usage of ProcessTree %s for container-id %s: ",
                      pId, containerId.toString()) +
@@ -506,12 +535,7 @@ public class ContainersMonitorImpl extends AbstractService implements
               pmemStillInUsage += currentPmemUsage;
             }
             
-            //adjust long-run container's memory limit.
-            if(isContainerElasticEnabled() && ptInfo.getLongRunMark()) {
-            	updateLongRunContainerResource(containerId, currentPmemUsage, pmemLimit);
-            	// just for test bug
-//            	updateLongRunContainerResource(containerId, curMemUsageOfAgedProcesses, pmemLimit);
-            }
+            
           } catch (Exception e) {
             // Log the exception and proceed to the next container.
             LOG.warn("Uncaught exception in ContainerMemoryManager "
@@ -543,7 +567,7 @@ public class ContainersMonitorImpl extends AbstractService implements
      */
     @SuppressWarnings("unchecked")
 	private void updateLongRunContainerResource(ContainerId containerId,
-			long curMemUsageOfAgedProcesses, long pmemLimit) {
+			long curMemUsageOfAgedProcesses, long pmemLimit, long pmemUpperLimit) {
 		BigDecimal b1 = new BigDecimal(Double.toString(curMemUsageOfAgedProcesses));
 		BigDecimal b2 = new BigDecimal(Double.toString(pmemLimit));
 		double ratio = b1.divide(b2, 2, BigDecimal.ROUND_HALF_UP).doubleValue();
@@ -556,12 +580,18 @@ public class ContainersMonitorImpl extends AbstractService implements
 			long memoryTotalInUse = getTotalMemoryInUse();
 			// total memory configured for containers
 			long memoryTotalAvailable = getPmemAllocatedForContainers();
-			if(memoryTotalAvailable - memoryTotalInUse >= (long) pmemLimit * 0.5) {
+			long delta = memoryTotalAvailable - memoryTotalInUse;
+			if(delta >= (long) pmemLimit * 0.5) {
 				//node have enough memory to expand
 				newPmemLimit = (long) (pmemLimit * 1.5);
 			}
 			else {
-				newPmemLimit = pmemLimit + (memoryTotalAvailable - memoryTotalInUse);
+				newPmemLimit = pmemLimit + delta;
+			}
+			if(newPmemLimit > pmemUpperLimit * 2) {
+				// check if memory exceed the upper limit
+				// TODO: here the num values need to be parameterized. 
+				newPmemLimit = pmemUpperLimit * 2;
 			}
 			memChanged = true;
 			LOG.info("expand memory of container from "+ pmemLimit/1024/1024 + " to "+ containerId.toString() + 
