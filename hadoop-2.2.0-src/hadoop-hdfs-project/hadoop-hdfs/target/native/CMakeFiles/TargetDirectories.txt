@@ -1,9 +1,0 @@
-/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/hdfs.dir
-/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/hdfs_static.dir
-/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/native_mini_dfs.dir
-/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/posix_util.dir
-/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/test_libhdfs_ops.dir
-/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/test_libhdfs_read.dir
-/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/test_libhdfs_threaded.dir
-/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/test_libhdfs_write.dir
-/home/zyfly/hadoop/hadoop-2.2.0-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/test_native_mini_dfs.dir
