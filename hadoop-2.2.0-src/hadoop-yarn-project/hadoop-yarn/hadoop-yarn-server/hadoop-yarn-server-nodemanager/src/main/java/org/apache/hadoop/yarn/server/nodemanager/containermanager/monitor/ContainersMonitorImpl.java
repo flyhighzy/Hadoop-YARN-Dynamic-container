@@ -587,12 +587,15 @@ public class ContainersMonitorImpl extends AbstractService implements
 			}
 			else {
 				newPmemLimit = pmemLimit + delta;
+				LOG.info("expand memory from " + pmemLimit/1024/1024 + 
+						", but node memory not enough with "+ delta/1024/1024+"M left");
 			}
+			/*
 			if(newPmemLimit > pmemUpperLimit * 2) {
 				// check if memory exceed the upper limit
 				// TODO: here the num values need to be parameterized. 
 				newPmemLimit = pmemUpperLimit * 2;
-			}
+			}*/
 			memChanged = true;
 			LOG.info("expand memory of container from "+ pmemLimit/1024/1024 + " to "+ containerId.toString() + 
 					" to " + newPmemLimit/1024/1024 + "MB");
@@ -613,6 +616,10 @@ public class ContainersMonitorImpl extends AbstractService implements
 			//update context and trigger ContextUpdateEvent
 			ConcurrentMap<ContainerId, Container> containers = context.getContainers();
 			Container c = containers.get(containerId);
+			if(c == null) {
+				LOG.info("Container " + containerId.toString() + " not exists in context!");
+				return;
+			}
 			Resource r = c.getResource();
 			Long newPmem = newPmemLimit/1024/1024;
 			r.setMemory(newPmem.intValue());
